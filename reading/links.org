@@ -1,0 +1,31 @@
+1. https://staff.aist.go.jp/c.artho/papers/artho-2015-icfem.pdf
+   * Domain-Specific Languages with Scala
+   * paper
+2. https://www.youtube.com/watch?v=v6Nu1k-IZy4
+   * RESTTest: exploring DSL design in Scala
+   * video
+3. https://www.youtube.com/watch?v=XpRusDdu2Mc
+   * Functional Thursday #16 - Embedded DSL Design in Scala by Zack
+   * video
+4. https://www.youtube.com/watch?v=TS1lpKBMkgg
+   * Pacific Northwest Scala 2013 - We're Doing It All Wrong by Paul Phillips
+   * video
+   * not DSL-centric
+5. http://stackoverflow.com/questions/1722726/is-the-scala-2-8-collections-library-a-case-of-the-longest-suicide-note-in-hist
+   * stackoverflow question, insightful answers
+   * not DSL-centric
+6. https://www.reddit.com/r/programming/comments/1rvltx/scala_1_would_not_program_again/
+   * not DSL-centric, might not be super useful
+7. http://www.slideshare.net/holograph/a-field-guide-to-dsl-design-in-scala
+   * talk slides
+8. http://www.anova.be/files/camel-scala.pdf
+   * DSL for Apache Camel, a Spring-based Integration Framework
+9. http://www.scalatest.org/
+   * testing tool for scala with a DSL to write tests
+10. http://squeryl.org/
+    * Scala ORM and DSL
+11. https://github.com/w11k/scalamodules/wiki
+    * DSL for OSGi (open services gateway) development
+12. https://github.com/json4s/json4s
+    * Scala JSON library and DSL
+
