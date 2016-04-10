@@ -28,4 +28,7 @@
     * DSL for OSGi (open services gateway) development
 12. https://github.com/json4s/json4s
     * Scala JSON library and DSL
-
+13. http://www.havelund.com/Publications/scala-days-2010-dsl.pdf
+    * Case study from JPL
+14. http://days2010.scala-lang.org/node/138/143/15-2-M%20-%20DSL%20Development%20-%20Havelund.mp4
+    * Video of talk
