@@ -34,3 +34,5 @@
     * Video of talk
 15. http://voelter.de/data/books/markusvoelter-dslengineering-1.0.pdf
     * DSL Engineering
+16. http://drops.dagstuhl.de/opus/volltexte/2015/5029/pdf/19.pdf
+    * Go Meta! A Case for Generative Programming and DSLs in Performance Critical Systems
