@@ -1,0 +1,105 @@
+\chapter{DSL}
+
+
+\section{Dive into DSLs}
+
+Domain specific languages (DSLs) are computer languages that are designed to express solutions to problems from a specific domain. Here by 'computer language' we understand any way of representing a computation intended to be carried out. With this rather broad definition, any of the following can be called a computer language: PostScript, TeX, CSS, regular expressions, or message filters in email software. It can be useful to define DSLs in opposition to general purpose languages (GPLs). DSLs are most expressive when they are used to solve programs in their own domain, whereas GPLs are the same across many domains.
+
+The general idea of DSLs is to trade-off the ease (or even ability) to solve general problems for the value we can add to solving problems from a specific domain. Some examples of added value can be:
+\begin{itemize}
+	\item syntax and semantics that is easy to learn by non-programmers
+	\item syntax that includes idioms common in the domain to make code more expressive
+	\item optimized execution using knowledge of the domain.
+\end{itemize}
+
+ For example, SQL is the DSL of relational databases. Its is designed to express the logic of data manipulation and querying in a relational database, and most database engines contain query optimizers. On the other hand, other computations can be very hard to express, and some dialects aren't even Turing complete.
+
+%TODO Something here maybe
+
+\subsection{Classification}
+%TODO Reference here
+One way to classify DSLs is to look at their relationship with the language used to implement them. The basic split is between external and internal (or embedded) DSLs. An external DSL is one that has syntax wholly independent from the implementing language and is a language by its own right. An embedded DSL is essentially a library of the implementing (or host) language which provides abstractions over the domain-specific knowledge.
+
+\subsection{External DSLs}
+
+External DSLs gives us the most flexibility of syntax. Since we are not constrained by the rules of the host language, the source code can be have a form that is the best way of modeling a solution of a domain problem: a set of symbolic equations, files in a specific hierarchy on disk or a list of turtle movement instructions. Custom syntax usually means a significant rise in implementation complexity and a drop in usability. 
+
+\subsubsection{Parsing custom syntax}
+
+An important issue in implementing external DSLs is that we need to parse the source files into an internal representation. Scala has several options for parsing libraries and parser generators which simplify this step significantly. However, languages with complex (or poorly designed) grammars will still result in complex parsers, and any input that isn't text-based (e. g. image, binary file) will need to be parsed using custom-written code.
+
+\subsubsection{End-user independence}
+
+The source code of programs written in external DSLs is completely separate from the implementation. To the end-user, this means that they don't need to have access to the implementation source code and build pipeline to write programs in the DSL. This allows use to, for example, embed a DSL in a commercial application. Customers can then extend the functionality of the program without having access to confidential implementation data.
+
+\subsubsection{Developer tools}
+
+A usability issue that arises when we use an external DSL is that there are no development tools that can help the programmer. Unless we implement it ourselves, we have no syntax highlighting or auto-completion in an editor. We also lose the ability to easily debug code. If we compile the code into an executable we must manually add debug symbols. If we use an interpreter written in the host language, we must keep information about the piece of source code we are currently running, which sometimes can be impossible.
+
+\subsection{Internal DSL}
+
+An internal DSL leverages the the host language to build programs. This solution can be severely limiting in terms of syntax because the DSL grammar needs to conform to the grammar of the host language. However, some languages (Scala included) have ways to adapt their syntax into multiple forms.
+
+A large benefit of using internal DSLs is that we don't need to worry about parsing. We can also use the type system of the host language to embed a type system in the DSL.
+
+%This isn't great
+A nice property of internal DSLs is that they can inter-operate with other programs written in the host language. For example, we can have an internal DSL in Scala that allows us to run computations on large remote datasets. We can then lift functions from a third-party Scala library into our DSL to run complex computations on our data.
+
+Internal DSLs can be further split into two groups: shallow and deep embeddings.
+
+\subsubsection{Shallow embeddings}
+
+A shallow embedding structures and names constructs in the host language in such a way that makes a program written in the DSL map directly onto a program in the host language with the same semantics.
+
+In this situation every stage of a programs lifetime, from parsing to execution is handled by the host language. This gives us all the benefits that we would have when writing a program in the host language: development tools, an optimizing compiler/interpreter, and externally verified code generation.
+
+%reference
+\begin{lstlisting}[caption=Example ScalaTest code, label=code:scalatest_sample]
+  "A Stack" should "pop values in last-in-first-out order" in {
+    val stack = new Stack[Int]
+    stack.push(1)
+    stack.push(2)
+    stack.pop() should be (2)
+    stack.pop() should be (1)
+  }
+  it should "throw NoSuchElementException if an empty stack is popped" in {
+    val emptyStack = new Stack[Int]
+    a [NoSuchElementException] should be thrownBy {
+      emptyStack.pop()
+    } 
+  }
+\end{lstlisting}
+
+On Listing \ref{code:scalatest_sample} we have a ScalaTest test scenario. We can see that normal Scala code is interspersed with ScalaTest code.
+The lines
+\begin{verbatim}
+"A Stack" should "pop values in last-in-first-out order" in {
+it should "throw NoSuchElementException if an empty stack is popped" in {
+\end{verbatim}
+define test case names, and the lines
+\begin{verbatim}
+stack.pop() should be (2)
+stack.pop() should be (1)
+a [NoSuchElementException] should be thrownBy { emptyStack.pop() }
+\end{verbatim}
+define assertions about code behavior. When executed, the Scala code is run and the assertions are checked. We then receive a descriptive report about which tests failed and which succeeded.
+
+
+\subsubsection{Deep embeddings}
+
+A deep embedding separates the representation of the DSL from its execution. We use the host language to create the structure of a program, which will be later compiled or interpreted by another part of the DSL.
+
+\begin{lstlisting}[caption=Sample spark code, label=code:spark_sample]
+val rdd = sparkContext.
+	fromFile("data.csv").
+	filter(...).
+	map(...)
+
+println(rdd.sum)
+\end{lstlisting}
+
+Seen on \ref{code:spark_sample} is an abbreviated Apache Spark\textsuperscript{TM} program. The variable rdd holds metadata that describe the loading and transforming of some data. This will be compiled to an execution plan and executed on multiple computers, completely transparently to the user.
+
+While this form of DSL doesn't make any allowances for handy syntax, it can be much more expressive and powerful than a shallow embedding. A shallow embedding needs to map cleanly into the host language. A deep embedding doesn't have that restriction, which opens up the possibility of using more powerful abstractions.
+
+Furthermore, while a deep DSL requires the implementation of a custom compiler/interpreter, it gives us the option to embed domain knowledge into the execution of a program. With an interpreter, we can use information gathered at runtime to make optimizations that would not be possible with a naive interpreter. If we compile a program to native code, we can generate code that uses assumptions that would not be available to a generic compiler. We can also generate code for non-standard targets, such as GPUs or FPGAs.
