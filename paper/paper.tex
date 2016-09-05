@@ -5,9 +5,15 @@
 
 \usepackage[utf8]{inputenc}
 \usepackage{listings}
+\usepackage{csquotes}
+\usepackage[style=science, backend=bibtex]{biblatex}
+\setcounter{biburllcpenalty}{90000}
+\setcounter{biburlucpenalty}{90000}
+\usepackage{imakeidx}
+\makeindex
 
 \lstset{ %
-  basicstyle=\ttfamily,
+  basicstyle=\ttfamily\footnotesize,
   breakatwhitespace=false,
   breaklines=true,
   captionpos=b,
@@ -55,7 +61,7 @@
 %\renewcommand \qedsymbol {\ensuremath{\square}}
 % ...
 %%%%%
-
+\addbibresource{bibliography.bib}
 \begin{document}
 
 %%%%% POCZĄTEK ZASADNICZEGO TEKSTU PRACY
@@ -64,13 +70,20 @@
 
 %\ldots
 
+
+\autocite{Resolutions}
+
 \input{chapter-dsl.tex}
 
 \input{chapter-scala-features.tex}
 
 \input{chapter-implementation.tex}
 
-
+\begingroup
+\raggedright
+\sloppy
+\printbibliography
+\endgroup
 %%%%% BIBLIOGRAFIA
 
 %\begin{thebibliography}{1}
