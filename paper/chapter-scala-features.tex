@@ -1,0 +1,102 @@
+\chapter{Scala features}
+%reference
+The core philosophy of scala is for it to be a 'scalable language', one which can adapt to the needs of its users. The creators wanted it to be an equally good choice for both small, simple programs and for large components of complex systems. To this end, Scala contains many different language features, some of which are explicitly in service of implementing DSLs.
+
+\section{Implicits}
+
+The implicits mechanism in Scala has two main components: implicit values/parameters, and implicit conversions. Although these components have different uses and meaning, they usually serve a common goal: to hide away a detail of the implementation that is necessary, but doesn't have to be exposed to the user at all times.
+
+\subsection{Implicit values/parameters}
+
+A function can declare that some of its arguments are {\it implicit}. These arguments can be omitted at the call site, and the compiler will perform an {\it implicit lookup}. This action searches in a number of places for a value of the type declared in the argument list, and applies it if found. Implicit values can also be retrieved using the function \texttt{implicitly[T]}. An common use is in functions that want to separate arguments that are logically part of the computation from arguments that represent some execution context. For example, in a library that provides support for asynchronous computations we would have an \texttt{ExecutorService} that provides access to a configured thread pool. Functions from this library would require an \texttt{ExecutorService} as an argument to provide async functionality. Marking the \texttt{ExecutorService} as implicit allows us to omit it from the function calls and unclutter our code, as shown in listings \ref{code:without_implicit} and \ref{code:with_implicit}
+
+\begin{lstlisting}[caption=Code without implicits, label=code:without_implicit, float]
+def async[T](code: => T)(ex: ExecutorService) = ???
+def scheduleOnce[T](code: => T, delay: Duration)(ex: ExecutorService) = ???
+
+val ex: ExecutorService = ???
+val k = async(expensiveOperation1())(ex)
+val v = async(expensiveOperation2())(ex)
+scheduleOnce(doThisAgain(), 1.hour)(ex)
+\end{lstlisting}
+
+\begin{lstlisting}[caption=Code with implicits, label=code:with_implicit, float]
+def async[T](code: => T)(implicit ex: ExecutorService) = ???
+def scheduleOnce[T](code: => T, delay: Duration)(implicit ex: ExecutorService) = ???
+
+implicit val ex: ExecutorService = ???
+val k = async(expensiveOperation1())
+val v = async(expensiveOperation2())
+scheduleOnce(doThisAgain(), 1.hour)
+\end{lstlisting}
+
+\subsection{Implicit conversions}
+Unary functions can be marked as {\it implicit} to become implicit conversions. This allows us to use expressions of type \texttt{A} as if they had type \texttt{B}, as long as we have an implicit conversion of type \texttt{A => B} in scope. This includes method calls, so we can call methods of type \texttt{B} on values of type \texttt{A}. Implicit conversions can be useful when we are using a library that requires a datatype that is different from what is used internally. Listing \ref{code:conversions} shows an interface that uses byte arrays, but we use implicit conversions to transparently use String within our program.
+
+\begin{lstlisting}[caption=Implicit conversions, label=code:conversions, float]
+def put(key: Array[Byte], value: Array[Byte]) = ???
+def get(key: Array[Byte]): Array[Byte] = ???
+
+implicit def bytesToString(bytes: Array[Byte]): String = new String(bytes)
+implicit def stringToBytes(string: String): Array[Byte]= string.getBytes
+
+put("k1", "v1")
+put("k2", "v2")
+val result: String = get("k3")
+\end{lstlisting}
+
+\subsection{Implicit classes}
+An implicit class is a shorthand definition of a class with a one-argument constructor alongside an implicit conversion from the argument to that class. This simplifies the implementation of the 'Enriched Class' pattern, which imitates adding methods to existing classes. Listing \ref{code:implicit_classes} shows a simple extension of the Int class. Now the methods \texttt{toHexString} is available on any instance of \texttt{Int} as long as the implicit class can be located.
+
+%reference
+\begin{lstlisting}[caption=Implicit class, label=code:implicit_classes, float]
+implicit class RichInt(val self: Int) {
+  def toHexString: String = java.lang.Integer.toHexString(self)
+}
+
+val i: Int = 5
+println(i.toHexString)
+\end{lstlisting}
+
+\subsection{Context bounds}
+Context bounds are a way to express more information at the type system level. The expressions \texttt{def f[T: Ordered](x: T) = \ldots} means that for a given type\texttt{T}, there exists an implementation of the trait \texttt{Ordered}, i. e. there exists a value of type Ordered[T]. This is actually just syntactic sugar which compiles to \texttt{def f[T](x: T)(implicit ev: Ordered[T])}. This mechanism is often used to emulate the behavior of Haskell type classes. Listing \ref{code:context_bounds} presents the implementation of the Show type class in Scala, which us slightly more verbose than in Haskell.
+
+\begin{lstlisting}[caption=Context bounds, label=code:context_bounds, float]
+trait Show[T] {
+  def show(t: T): String
+}
+def print[T: Show](t: T) = {
+  val str = implicitly[Show[T]].show(t)
+  println(str)
+}
+
+implicit val showableInt: Show[Int] = new Show[Int] { def show(i: Int): String = i.toString }
+implicit val showableFloat: Show[Float] = new Show[Float] { def show(f: Float): String = f.toString }
+print(1)
+print(2f)
+print("3") //will not compile since there is no implementation od Show[String]
+\end{lstlisting}
+
+There is a similar construct called the view bound. The code \texttt{def f[T <\% B](x: T)} means that the type \texttt{T} can be viewed as as type \texttt{B}, and it desugars to \texttt{def f[T](x: T)(implicit ev: T => B)}. However, this is currently deprecated and will be removed in future versions of Scala, as it can be easil reproduce using context bounds.
+
+\subsection{Implicit lookup}
+%reference
+\begin{enumerate}
+	\item First look in current scope
+	\begin{itemize}
+		\item Implicits defined in current scope (\texttt{implicit val x = ???})
+    \item Explicit imports (\texttt{import dsl.byte2String})
+    \item wildcard imports (\texttt{import dsl._})
+	\end{itemize}
+	\item Now look at associated types in
+	\begin{itemize}
+		\item Companion objects of a type
+		\item Implicit scope of an argument’s type
+		\item Implicit scope of type arguments
+		\item Outer objects for nested types
+	\end{itemize}
+\end{enumerate}
+
+The implicits found in group 1 take precedence over implicits found in group 2. If multiple matching implicits are found, we choose the one with the most specific type. Otherwise, if none are found or we cannot disambiguate the implicit, the compilation fails.
+        
+\subsection{Criticisms}
