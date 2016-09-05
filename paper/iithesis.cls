@@ -54,7 +54,7 @@
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesClass{iithesis}
 
-\LoadClass[a4paper,11pt,onecolumn,oneside,openright,titlepage]{report}
+\LoadClass[a4paper,11pt,onecolumn,openright,titlepage]{report}
 
 \RequirePackage{ifthen}
 \newboolean{Long@Abstract}
@@ -104,7 +104,7 @@
 
 \RequirePackage[OT4]{fontenc}
 \RequirePackage{babel,titling,geometry}
-\geometry{margin=3cm,bindingoffset=1cm,a4paper,onecolumn,oneside}
+\geometry{margin=3cm,bindingoffset=1cm,a4paper,onecolumn}
 
 \pagestyle{headings}
 
