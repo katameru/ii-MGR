@@ -2,9 +2,9 @@
 
 \section{Dive into DSLs}
 
-Domain specific languages (DSLs) are computer languages that are designed to express solutions to problems from a specific domain. It's not easy to formulate a strict definition of what is and isn't a DSL. It can be useful to define DSLs in opposition to general purpose languages (GPLs). DSLs are most expressive when they are used to solve programs in their own domain, whereas GPLs are the same across many domains. Even then classifying some langages is problematic. Let us consider a spectrum of languages: Bash, PostScript, TeX, CSS, regular expressions, or message filters in email software. Bash is specialized for creating shell scripts, but is still a fully fledged language on its own. On the other hand we could argue that message filters are barely a language at all.
+Domain specific languages (DSLs) are computer languages that are designed to express solutions to problems from a specific domain. It's not easy to formulate a strict definition of what is and isn't a DSL. It can be useful to define DSLs in opposition to general purpose languages (GPLs). DSLs are most expressive when they are used to solve programs in their own domain, whereas GPLs are the same across many domains. Even then classifying some languages is problematic. Let us consider a spectrum of languages: Bash, PostScript, TeX, CSS, regular expressions, or message filters in email software. Bash is specialized for creating shell scripts, but is still a fully fledged language on its own. On the other hand we could argue that message filters are barely a language at all.
 
-DSLs are a powerful element of a developers toolbox, allowing us to write programs that are simpler and musch more expressive. One one hand they provide abstractions of concepts that are part of the domain by making them structural elements of the language. On the other hand they can abstract from the details of computation part of the solution. However, this means that to create a good DSL we must both: have a very good understanding of the domain, so that we can not only model solutions but also a general framework for solutions, and be a good developer so that the abstractions we provide are well designed.
+DSLs are a powerful element of a developers toolbox, allowing us to write programs that are simpler and much more expressive. One one hand they provide abstractions of concepts that are part of the domain by making them structural elements of the language. On the other hand they can abstract from the details of computation part of the solution. However, this means that to create a good DSL we must both: have a very good understanding of the domain, so that we can not only model solutions but also a general framework for solutions, and be a good developer so that the abstractions we provide are well designed.
 
 The general idea of DSLs is to trade-off the ease (or even ability) to solve general problems for the value we can add to solving problems from a specific domain. Some examples of added value can be:
 \begin{itemize}
@@ -18,7 +18,7 @@ For example, SQL is the DSL of relational databases. Its is designed to express 
 
 There are many ways to classify DSLs \autocite{Gunther:2011} based on their properties. We can study their appearance, origin (relation to implementing language), originality, how it's implemented or what is its purpose. In this paper we focus mainly Scala, and how it enables DSL creation. Since the features that are said to make Scala a good language for DSLs relate to building internal DSL, we will highlight and analyze the patterns relating to building abstractions and notations.
 
-\subsection{Classification}
+\section{Classification}
 One way to classify DSLs is to look at their relationship with the language used to implement them \autocite{Artho:2015, Gunther:2011}. The basic split is between external and internal (or embedded) DSLs. An external DSL is one that has syntax wholly independent from the implementing language and is a language by its own right. An embedded DSL is essentially a library of the implementing (or host) language which provides abstractions over the domain-specific knowledge.
 
 \subsection{External DSLs}
@@ -107,3 +107,24 @@ Furthermore, while a deep DSL requires the implementation of a custom compiler/i
 
 \section{Common patterns}
 
+We describe the following notation patterns based on \autocite{Gunther:2011}:
+\begin{itemize}
+	\item Layout patterns - these patterns allow us to manipulate how the source code presents visually. Code layout can represent a hierarchy or other relationship between domain objects.
+	\begin{enumerate}
+		\item Block scope - arrange and group expressions in a way that represent their hierarchy in the domain. Code listing~\ref{code:scalatest_sample} shows us putting each separate test in it's own logical scope.
+		\item Method chaining - make actions on domain objects be a result of sequentially applying methods. This way a composite action can be read fluently. Listing~\ref{code:scalatest_sample} uses this in making test and assertion definitions read like a sentence in english.
+		\item Keyword arguments - allow arguments to methods be passed with explicit specification of the parameter name. This way the user doesn't need to know the implementation detail of the order of parameters in a function call.
+	\end{enumerate}
+	\item Expression patterns - these patterns allow us to separate ourselves from the host language by removing details of its operation.
+	\begin{enumerate}
+		\item Seamless constructor - keep the user from instantiating objects since things like memory management semantics shouldn't be a part of the DSL.
+		\item Operator expressions - use custom implementations for operators like \texttt{+}, \texttt{-}, \texttt{*} where appropriate.
+	\end{enumerate}
+	\item Support patterns - these patterns allow us to further simplify our language
+	\begin{enumerate}
+		\item Clean methods calls - remove unnecessary symbols from method calls
+		\item Custom return objects - instead of returning simple values from the host language, wrap results in a custom object. This can provide additional functionality and be reused in other parts of the DSL.
+	\end{enumerate}
+\end{itemize}
+
+These patterns allow a DSL to better model the domain by folding more knowledge into the structure of the language. They also allow us to abstract away from the language by removing symbols and expressions that are not part of the DSL.
