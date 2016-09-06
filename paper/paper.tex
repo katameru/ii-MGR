@@ -6,11 +6,10 @@
 \usepackage[utf8]{inputenc}
 \usepackage{listings}
 \usepackage{csquotes}
-\usepackage[style=science, backend=bibtex]{biblatex}
-\setcounter{biburllcpenalty}{90000}
-\setcounter{biburlucpenalty}{90000}
-\usepackage{imakeidx}
-\makeindex
+\usepackage[style=ieee, backend=bibtex, block=ragged]{biblatex}
+\usepackage{url}
+\usepackage{breakurl} 
+\usepackage[breaklinks]{hyperref}
 
 \lstset{ %
   basicstyle=\ttfamily\footnotesize,
@@ -70,8 +69,6 @@
 
 %\ldots
 
-
-\autocite{Resolutions}
 
 \input{chapter-dsl.tex}
 
