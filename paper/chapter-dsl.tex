@@ -1,24 +1,25 @@
 \chapter{DSL}
 
-
 \section{Dive into DSLs}
 
-Domain specific languages (DSLs) are computer languages that are designed to express solutions to problems from a specific domain. Here by 'computer language' we understand any way of representing a computation intended to be carried out. With this rather broad definition, any of the following can be called a computer language: PostScript, TeX, CSS, regular expressions, or message filters in email software. It can be useful to define DSLs in opposition to general purpose languages (GPLs). DSLs are most expressive when they are used to solve programs in their own domain, whereas GPLs are the same across many domains.
+Domain specific languages (DSLs) are computer languages that are designed to express solutions to problems from a specific domain. It's not easy to formulate a strict definition of what is and isn't a DSL. It can be useful to define DSLs in opposition to general purpose languages (GPLs). DSLs are most expressive when they are used to solve programs in their own domain, whereas GPLs are the same across many domains. Even then classifying some langages is problematic. Let us consider a spectrum of languages: Bash, PostScript, TeX, CSS, regular expressions, or message filters in email software. Bash is specialized for creating shell scripts, but is still a fully fledged language on its own. On the other hand we could argue that message filters are barely a language at all.
+
+DSLs are a powerful element of a developers toolbox, allowing us to write programs that are simpler and musch more expressive. One one hand they provide abstractions of concepts that are part of the domain by making them structural elements of the language. On the other hand they can abstract from the details of computation part of the solution. However, this means that to create a good DSL we must both: have a very good understanding of the domain, so that we can not only model solutions but also a general framework for solutions, and be a good developer so that the abstractions we provide are well designed.
 
 The general idea of DSLs is to trade-off the ease (or even ability) to solve general problems for the value we can add to solving problems from a specific domain. Some examples of added value can be:
 \begin{itemize}
-	\item syntax and semantics that is easy to learn by non-programmers
+	\item syntax and semantics that is easy to learn by non-programmers and resembles notation used by domain experts
 	\item syntax that includes idioms common in the domain to make code more expressive
-	\item optimized execution using knowledge of the domain.
+	\item programs can be analyzed and verified so that some errors are caught early
+	\item program execution can be optimized using domain knowledge
 \end{itemize}
 
- For example, SQL is the DSL of relational databases. Its is designed to express the logic of data manipulation and querying in a relational database, and most database engines contain query optimizers. On the other hand, other computations can be very hard to express, and some dialects aren't even Turing complete.
+For example, SQL is the DSL of relational databases. Its is designed to express the logic of data manipulation and querying in a relational database, and its notation uses the mathematical model of relational algebras. Most database engines contain query optimizers which use both data available at query definition and at runtime to help performance. On the other hand, some computations can be very hard to express, and some dialects aren't even Turing complete.
 
-%TODO Something here maybe
+There are many ways to classify DSLs \autocite{Gunther:2011} based on their properties. We can study their appearance, origin (relation to implementing language), originality, how it's implemented or what is its purpose. In this paper we focus mainly Scala, and how it enables DSL creation. Since the features that are said to make Scala a good language for DSLs relate to building internal DSL, we will highlight and analyze the patterns relating to building abstractions and notations.
 
 \subsection{Classification}
-%TODO Reference here
-One way to classify DSLs is to look at their relationship with the language used to implement them. The basic split is between external and internal (or embedded) DSLs. An external DSL is one that has syntax wholly independent from the implementing language and is a language by its own right. An embedded DSL is essentially a library of the implementing (or host) language which provides abstractions over the domain-specific knowledge.
+One way to classify DSLs is to look at their relationship with the language used to implement them \autocite{Artho:2015, Gunther:2011}. The basic split is between external and internal (or embedded) DSLs. An external DSL is one that has syntax wholly independent from the implementing language and is a language by its own right. An embedded DSL is essentially a library of the implementing (or host) language which provides abstractions over the domain-specific knowledge.
 
 \subsection{External DSLs}
 
@@ -103,3 +104,6 @@ Seen on \ref{code:spark_sample} is an abbreviated Apache Spark\textsuperscript{T
 While this form of DSL doesn't make any allowances for handy syntax, it can be much more expressive and powerful than a shallow embedding. A shallow embedding needs to map cleanly into the host language. A deep embedding doesn't have that restriction, which opens up the possibility of using more powerful abstractions.
 
 Furthermore, while a deep DSL requires the implementation of a custom compiler/interpreter, it gives us the option to embed domain knowledge into the execution of a program. With an interpreter, we can use information gathered at runtime to make optimizations that would not be possible with a naive interpreter. If we compile a program to native code, we can generate code that uses assumptions that would not be available to a generic compiler. We can also generate code for non-standard targets, such as GPUs or FPGAs.
+
+\section{Common patterns}
+
