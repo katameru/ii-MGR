@@ -111,13 +111,76 @@ The implicits found in group 1 take precedence over implicits found in group 2. 
         
 \subsubsection{Criticisms}
 
+Criticizing implicits is a common thread in online discussions about Scala. While not actually broken, implicits are a powerful and complex feature that is very prone to abuse.
+
+The Scala collections library is an interesting example of implicit parameter (ab)use. Sometimes calles the "Longest suicide note in history" \autocite{lakes:2009}, it makes uses implicit parameters and the \texttt{CanBuildFrom} type class to provide robust operations on collections. Looking at the \texttt{map} method of \texttt{List[A]} which we expect to have the type signature \texttt{def map[B](f: A => B): List[B]}. The actual signature is \texttt{def map[B, That](f: A => B)(implicit bf: CanBuildFrom[Repr, B, That]): That}. Listing~\ref{code:bitset} (taken from a response to \autocite{lakes:2009}) shows that the implicit parameter in \texttt{map} is used to find the best possible return type for that method. While this is a powerful result, it presents less like functionality and more like a leaky abstraction. This is underlined by the fact that in newer versions of Scala the documentation doesn't show the real type, but the one that we expected in the beginning.
+
+\begin{lstlisting}[caption=Bitset example, label=code:bitset]
+scala> val bits = BitSet(1, 2, 3)
+bits: scala.collection.immutable.BitSet = BitSet(1, 2, 3)
+
+scala> val shifted = bits map { _ + 1 }
+shifted: scala.collection.immutable.BitSet = BitSet(2, 3, 4)
+
+scala> val displayed = bits map { _.toString + "!" }
+displayed: scala.collection.immutable.Set[java.lang.String] = Set(1!, 2!, 3!)
+\end{lstlisting}
+
+Leaky abstractions expose the main problem of implicits, which is the large cognitive load to reason about them. When we encounter a problem or confusion with implicits, we cannot immediately say where a value came from. We need to know the implicit lookup algorithm which, while not complex, is not intuitive. Poorly designed implicit conversions can also hide errors. Every time there is a type error in a program, the implicit lookup algorithm tries to find a conversion which will let it compile. We now run a risk of accidentally compiling code that should have caused a type error because it just happened to find a fitting conversion.
+
+\section{Method invocation}
+
+Basic Scala method invocation is identical to Java method invocation. However, there are various alternatives to that notation that Scala allows.
+
+\begin{itemize}
+	\item When invoking methods that don't take arguments, we can omit the empty parentheses (\texttt{list.size} instead of \texttt{list.size()}).
+	\item When invoking a methods that takes one parameter, we can use the infix notation, that is omit the dot and parentheses ((\texttt{list append 1} instead of \texttt{list.append(1)}))
+	\item We can chain infix method invocations. \texttt{a m1 a1 m2 a2 m3} compiles as \texttt{a.m1(a1).m2(a2).m3()}
+	\item If we keep parentheses around methods with multiple arguments, we can omit all dots in an expression. \texttt{a m1(a1, a2) m2 a2} will compile to \texttt{a.m1(a1, a2).m2(a2)}
+\end{itemize}
+
+These syntax options are crucial in enabling the Method Chaining and Clean Method Calls patterns. However care must be taken to understand the rules of how expressions like these are parsed. Code listings \ref{code:dotless1} and \ref{code:dotless2} show two expressions that look extremely similar. However, the expression in listing \ref{code:dotless1} compiles to \texttt{a.m(m).b}, whereas the other expression is actually two expressions: \texttt{a.m(); m.b()}. In a well designed language this would usually cause a compilation error, but some DSLs might want to reuse the same name in different contexts, which could lead to both code snippets being valid.
+
+
+\begin{lstlisting}[caption=Parsing quirks, label=code:dotless1]
+a m
+m b
+\end{lstlisting}
+
+\begin{lstlisting}[caption=Parsing quirks, label=code:dotless2]
+a m
+
+m b
+\end{lstlisting}
+
 \section{Operator overloading}
 
-\section{Dot-free notation}
+Scala allows us to define methods whose names contain symbols. When combined with infix method invocation we get a notation that resembles operator overloading, but is in fact just arbitrary method invocation. There are two special cases: 
+\begin{itemize}
+	\item expressions like \texttt{!b} are translated into \texttt{b.unary_!()}. This is true only for symbols \texttt{+},\texttt{-},\texttt{\~}, \texttt{!}.
+	\item method ends with a colon (\texttt{:}), it binds to the right. This means that \texttt{1 &: x} is translated into \texttt{x.&:(1)}
+\end{itemize}
+
+There is a small inconsistency between normal methods and symbolic operators. The parser assigns higher priority to operators, so the code \texttt{m get k ! s} parses as \texttt{m.get(k.!(s))}, while \texttt{m get k tell s} will parse as \texttt{m.get(k).tell(s)}. This could be used to avoid some parentheses, but in general can probably cause confusion and bugs.
+
+The ability to define custom operations allows us to implement the Operator Expressions pattern. We can emulate notation used by domain experts and create our own shorthands. The problem with using custom operators is that if we introduce new symbols that are unrelated to the domain we run the risk of creating completely unreadable code. When we're working in the domain of matrix manipulation, we can be reasonably confident as to what effect symbols like \texttt{+} or \texttt{*} have. But in a DSL used to create API endpoints, operators like \texttt{:++>>} or \texttt{<|*|>} are completely opaque, and worst of all, ungoogleable. Martin Odersky recently wrote: "But in retrospect I think maybe they did give a bad example for others to go overboard with symbolic operators." \autocite{Odersky:2016}
+
 
 \section{Macros}
 
+Macros in Scala are a type-safe way to facilitate compile-time metaprogramming. Unlike text-based substitution seen in languages like C, Scala macros transform the abstract syntax tree of parsed and correctly typed Scala code. The macro implementation is plain Scala code, but since the implementation needs to be available to the compiler, we need to compile it earlier.
+
+We can use macros as a way to incorporate information that is available at compile time into code. This is best shown by \texttt{sqltyped}, a library which infers type information from SQL schema and query statements. Since it does this before compilation, we can have code that has the SQL snippet \texttt{select name, age from person where age > ?} which is automatically transformed into a function of type \texttt{Int => List[{ age: Int, name: String}]}.
+
+The macro mechanism in Scala is extremely powerful. It can be used in the implementation of many notation patterns, especially since we can write code that better models the domain, and later transform it with macros to conform better to the capabilities of the host language.
+
+Macro support in Scala is currently marked as experimental and is very actively being worked on. As such, between Scala versions 2.10 and 2.11 there have been several breaking changes and deprecations. This makes macros seem not to be a safe avenue of feature implementation.
+
 \section{Type system}
+
+
+
+\section{Object initialization expressions}
 
 \section{Summary}
 Each feature is barely enough rope to hang ourselves, but we can tie the ropes together.
