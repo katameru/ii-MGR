@@ -21,8 +21,8 @@ The implicits mechanism in Scala has two main components: implicit values/parame
 A function can declare that some of its arguments are {\it implicit}. These arguments can be omitted at the call site, and the compiler will perform an {\it implicit lookup}. This action searches in a number of places for a value of the type declared in the argument list, and applies it if found. Implicit values can also be retrieved using the function \texttt{implicitly[T]}. An common use is in functions that want to separate arguments that are logically part of the computation from arguments that represent some execution context. For example, in a library that provides support for asynchronous computations we would have an \texttt{ExecutorService} that provides access to a configured thread pool. Functions from this library would require an \texttt{ExecutorService} as an argument to provide async functionality. Marking the \texttt{ExecutorService} as implicit allows us to omit it from the function calls and unclutter our code, as shown in listings \ref{code:without_implicit} and \ref{code:with_implicit}
 
 \begin{lstlisting}[caption=Code without implicits, label=code:without_implicit]
-def async[T](code: => T)(ex: ExecutorService) = ???
-def scheduleOnce[T](code: => T, delay: Duration)(ex: ExecutorService) = ???
+def async[T](code: => T)(ex: ExecutorService) = ...
+def scheduleOnce[T](code: => T, delay: Duration)(ex: ExecutorService) = ...
 
 val ex: ExecutorService = ???
 val k = async(expensiveOperation1())(ex)
@@ -31,10 +31,10 @@ scheduleOnce(doThisAgain(), 1.hour)(ex)
 \end{lstlisting}
 
 \begin{lstlisting}[caption=Code with implicits, label=code:with_implicit, float]
-def async[T](code: => T)(implicit ex: ExecutorService) = ???
-def scheduleOnce[T](code: => T, delay: Duration)(implicit ex: ExecutorService) = ???
+def async[T](code: => T)(implicit ex: ExecutorService) = ...
+def scheduleOnce[T](code: => T, delay: Duration)(implicit ex: ExecutorService) = ...
 
-implicit val ex: ExecutorService = ???
+implicit val ex: ExecutorService = ...
 val k = async(expensiveOperation1())
 val v = async(expensiveOperation2())
 scheduleOnce(doThisAgain(), 1.hour)
@@ -44,8 +44,8 @@ scheduleOnce(doThisAgain(), 1.hour)
 Unary functions can be marked as {\it implicit} to become implicit conversions. This allows us to use expressions of type \texttt{A} as if they had type \texttt{B}, as long as we have an implicit conversion of type \texttt{A => B} in scope. This includes method calls, so we can call methods of type \texttt{B} on values of type \texttt{A}. Implicit conversions can be useful when we are using a library that requires a datatype that is different from what is used internally. Listing \ref{code:conversions} shows an interface that uses byte arrays, but we use implicit conversions to transparently use String within our program.
 
 \begin{lstlisting}[caption=Implicit conversions, label=code:conversions, float]
-def put(key: Array[Byte], value: Array[Byte]) = ???
-def get(key: Array[Byte]): Array[Byte] = ???
+def put(key: Array[Byte], value: Array[Byte]) = ...
+def get(key: Array[Byte]): Array[Byte] = ...
 
 implicit def bytesToString(bytes: Array[Byte]): String = new String(bytes)
 implicit def stringToBytes(string: String): Array[Byte]= string.getBytes
@@ -94,7 +94,7 @@ There is a similar construct called the view bound. The code \texttt{def f[T <\%
 \begin{enumerate}
 	\item First look in current scope
 	\begin{itemize}
-		\item Implicits defined in current scope (\texttt{implicit val x = ???})
+		\item Implicits defined in current scope (\texttt{implicit val x = ...})
     \item Explicit imports (\texttt{import dsl.byte2String})
     \item wildcard imports (\texttt{import dsl.\_})
 	\end{itemize}
@@ -176,11 +176,35 @@ The macro mechanism in Scala is extremely powerful. It can be used in the implem
 
 Macro support in Scala is currently marked as experimental and is very actively being worked on. As such, between Scala versions 2.10 and 2.11 there have been several breaking changes and deprecations. This makes macros seem not to be a safe avenue of feature implementation.
 
-\section{Type system}
-
-
-
 \section{Object initialization expressions}
+
+Scala supports using anonymous classes in programs. An anonymous class is a class that is defined and instantiated inline with code, often because it does not need to be reused. Anonymous classes can still use the normal inheritance mechanisms, so we can have on-off classes that are concise and powerful. In the context of DSLs, we can use this capability to implement the Block Scope and Supertype patterns. On listing~\ref{code:anonymous} we show how a DSL might use anonymous classes. The \texttt{Connection} and \texttt{Encryption} traits are part of the DSL implementation and encapsulate domain models relating to properties of connections. This usage gives us:
+\begin{itemize}
+	\item Type safety - we can restrict usage of unencrypted connections in by making sure that the connection implements the trait \texttt{Encryption}
+	\item Supertype - the \texttt{connect} and \texttt{encrypt} methods can be used only within the scope of the new class body. The domain hierarchy is enforced by the language, which removes clutter and prevents mistakes.
+	\item Block scope - connection properties may only be defined within the block used to define the new class instance. This guarantees that any and all information regarding a connection definition will be found in one place.
+\end{itemize}
+
+Unfortunately, usage of this pattern relies on a feature of Scala that cannot be abstracted from. The object must be constructed using the \texttt{new} operator and obey all rules of Scala scoping and object creation.
+
+\begin{lstlisting}[caption=Anonymous classes, label=code:anonymous]
+trait Connection {
+  protected def connect = ...
+  protected def on = ...
+}
+
+trait Encryption {
+  protected def encrypt = ...
+}
+
+val conn = new Connection with Encryption {
+  connect to "example.com"
+  on port 223
+  encrypt with TLS
+}
+\end{lstlisting}
+
+\section{Other features}
 
 \section{Summary}
 Each feature is barely enough rope to hang ourselves, but we can tie the ropes together.
