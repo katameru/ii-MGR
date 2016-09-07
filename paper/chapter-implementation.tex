@@ -109,7 +109,7 @@ case class GroupedDescription(
 \subsubsection{Compiling statistics}
 We make compiling the statistics simple by not implementing any optimizations. The \texttt{EntryProcessor} has mutable internal state that maps a pair (parsed grouping values, output name) into a computed aggregate. Listing~\ref{code:processing} presents the logic of processing entries.
 
-\begin{lstlisting}[caption=Processing entries, label=code:processing]
+\begin{lstlisting}[caption=Processing entries, label=code:processing,float,floatplacement=H]
 for each grouped statistic description
   try to parse the grouping columns
   for each column aggregate description
@@ -121,7 +121,7 @@ for each grouped statistic description
 
 The shallow DSL for our language consists of two parts: the \texttt{shallow} package object, and the \texttt{StatsConfiguration} trait. The former provides the implicit classes and named parser and aggregate implementations, while the latter allows us to group the descriptions in a single class using \texttt{select(...).groupBy(...)}.
 
-\begin{lstlisting}[caption=shallow package object, label=code:shallow]
+\begin{lstlisting}[caption=shallow package object, label=code:shallow,float,floatplacement=H]
 package object shallow {
   //Parsers
   def int = IntParser
@@ -155,7 +155,7 @@ package object shallow {
 }
 \end{lstlisting}
 
-\begin{lstlisting}[caption=StatsConfiguration, label=code:config]
+\begin{lstlisting}[caption=StatsConfiguration, label=code:config,float,floatplacement=H]
 trait StatsConfiguration {
   class StubbedGroupedDescriptions(descriptions: Seq[ColumnAggregateDescription[_]]) {
     private val groupingBuffer: ArrayBuffer[SourceColumnDescription[String]] = ArrayBuffer()

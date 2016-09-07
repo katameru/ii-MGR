@@ -157,8 +157,8 @@ m b
 
 Scala allows us to define methods whose names contain symbols. When combined with infix method invocation we get a notation that resembles operator overloading, but is in fact just arbitrary method invocation. There are two special cases: 
 \begin{itemize}
-	\item expressions like \texttt{!b} are translated into \texttt{b.unary_!()}. This is true only for symbols \texttt{+},\texttt{-},\texttt{\~}, \texttt{!}.
-	\item method ends with a colon (\texttt{:}), it binds to the right. This means that \texttt{1 &: x} is translated into \texttt{x.&:(1)}
+	\item expressions like \texttt{!b} are translated into \texttt{b.unary\_!()}. This is true only for symbols \texttt{+},\texttt{-},\texttt{\~}, \texttt{!}.
+	\item method ends with a colon (\texttt{:}), it binds to the right. This means that \texttt{1 \&: x} is translated into \texttt{x.\&:(1)}
 \end{itemize}
 
 There is a small inconsistency between normal methods and symbolic operators. The parser assigns higher priority to operators, so the code \texttt{m get k ! s} parses as \texttt{m.get(k.!(s))}, while \texttt{m get k tell s} will parse as \texttt{m.get(k).tell(s)}. This could be used to avoid some parentheses, but in general can probably cause confusion and bugs.
@@ -205,6 +205,85 @@ val conn = new Connection with Encryption {
 \end{lstlisting}
 
 \section{Other features}
+
+\subsection{Type system}
+
+The Scala type system provides many features that aid developers in implementing correct code. Local type inference is important to the notation aspect of DSLs since it allows us to omit type annotation in variable declarations, and possibly keep it out of the DSL entirely. Of course to help us build languages that are robust and extensible we can use all the other features of the Scala type system like variance annotations, type bounds, type members, structural typing, higher-kinded types, or existential types.
+
+The issue with the type system is that with this large and continually growing amount of features it is easier to find strange corner cases that are at best counterintuitive and at worst broken. For example, Scala doesn't have full Hindley–Milner type inference. Instead, an expression is fully typed in the place that it appears in, and sometimes needs to be guided. This can lead to a situation like in listing~\ref{code:inference}, where the variable \texttt{b} was inferred to have type \texttt{X[Nothing]}. This makes it problematic to apply common expression extraction, because we could accidentaly remove code that guides the inference.
+
+\begin{lstlisting}[caption=Local inference, label=code:inference]
+class X[T] {
+  def m(x: T) = this
+}
+
+val am = new X().m(1)
+
+val b = new X()
+val bm = b.m(1)
+
+val c = new X[Int]
+val cm = c(1)
+\end{lstlisting}
+
+Listing \ref{code:existentials} is a more convoluted, with its use of type bounds and existential types. However, it shows that sometimes the inference needs to be very explicitly guided to compile simple and evidently correct at all. It is especially confusing for code at line \ref{line:why}, where we have to annotate a value with a type that it already has.
+
+
+\begin{lstlisting}[caption=Existential inference, label=code:existentials, escapechar=|, float, floatplacement=H]
+trait InternalBound
+
+class InternalImpl extends InternalBound
+
+trait Container {
+  type Internal <: InternalBound
+}
+
+class ContainerImpl extends Container {
+  type Internal = InternalImpl
+}
+
+object Test {
+  type ContainerWithInternal = (T, T#Internal) forSome { type T <: Container; }
+  type CS = (A, B) forSome { type A <: Container; type B <: A#Internal }
+
+  def construct[T <: Container](i: T, e: T#Internal): ContainerWithInternal = (i, e)
+
+  //Type error
+  //def constructCS1[A <: Container](a: A, b: A#Internal): CS = (a, b) |\label{line:why}|
+  def constructCS2[A <: Container](a: A, b: A#Internal): CS = (a, b): (A, A#Internal)
+
+  def main(args: Array[String]): Unit = {
+
+    val container = new ContainerImpl
+    val internal = new container.Internal()
+    val internalWithCast: container.Internal = new container.Internal()
+
+    //Type errors
+    //val res1: ContainerWithInternal = (container, internal)
+    //val res2: ContainerWithInternal = construct(container, internal)
+    val res3: ContainerWithInternal = construct(container, (internal: container.Internal))
+    val res4: ContainerWithInternal = construct[ContainerImpl](container, internal)
+
+    val res5: ContainerWithInternal = (container, internalWithCast)
+    val res6: ContainerWithInternal = construct(container, internalWithCast)
+    val res7: ContainerWithInternal = construct[ContainerImpl](container, internalWithCast)
+  }
+}
+\end{lstlisting}
+
+\subsection{Named parameters \& default arguments}
+
+The named parameters feature in Scala allows us to indicate which value to use as which parameter in a function. We can also define default values for arguments, so that we can skip them completely. With this we can implement the keyword parameters pattern, as seen in listing \ref{code:named}.
+
+\begin{lstlisting}[caption=Named parameters \& default arguments, label=code:named]
+def printName(firstName: String, middleName: String = "", lastName: String = "") = {
+  println(s"\$firstName \$middleName \$lastName")
+}
+printName("John")
+printName(firstName = "John", lastName = "Doe", middleName = "F")
+\end{lstlisting}
+
+\subsections{Objects as modules}
 
 \section{Summary}
 Each feature is barely enough rope to hang ourselves, but we can tie the ropes together.
