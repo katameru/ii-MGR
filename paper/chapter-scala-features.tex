@@ -1,6 +1,5 @@
 \chapter{Scala features}
-%reference
-The core philosophy of scala is for it to be a 'scalable language', one which can adapt to the needs of its users. The creators wanted it to be an equally good choice for both small, simple programs and for large components of complex systems. To this end, Scala contains many different language features, some of which are explicitly in service of implementing DSLs. In this chapter we explore how the various patterns used in DSL implementation are supported in Scala.
+The core philosophy of scala is for it to be a 'scalable language', one which can adapt to the needs of its users \autocite{Odersky:2004}. The creators wanted it to be an equally good choice for both small, simple programs and for large components of complex systems. To this end, Scala contains many different language features, some of which are explicitly in service of implementing DSLs. In this chapter we explore how the various patterns used in DSL implementation are supported in Scala.
 
 \section{Parsing}
 
@@ -8,7 +7,7 @@ Scala has good support for creating parsers. There is a Scala standard parser co
 
 \section{Execution}
 
-While the interpretation of a program in AST form  (usually) doesn't pose much problem, it is much harder to generate an executable binary file. There exist Scala libraries that allow the generation of JVM classfiles such as \texttt{Cafebabe}, but I have not found a library that allows for the writing of any binary executable format. This is problematic if we want to execute programs written in the DSL in an environment that does not support the JVM.
+While the interpretation of a program in AST form  (usually) doesn't pose much problem, it is much harder to generate an executable binary file. There exist Scala libraries that allow the generation of JVM classfiles such as \texttt{Cafebabe}, but as of writing we have not found a library that allows for the creation of any binary executable format. This is problematic if we want to execute programs written in the DSL in an environment that does not support the JVM.
 
 \section{Internal modeling}
 
@@ -18,19 +17,19 @@ The implicits mechanism in Scala has two main components: implicit values/parame
 
 \subsubsection{Implicit values/parameters}
 
-A function can declare that some of its arguments are {\it implicit}. These arguments can be omitted at the call site, and the compiler will perform an {\it implicit lookup}. This action searches in a number of places for a value of the type declared in the argument list, and applies it if found. Implicit values can also be retrieved using the function \texttt{implicitly[T]}. An common use is in functions that want to separate arguments that are logically part of the computation from arguments that represent some execution context. For example, in a library that provides support for asynchronous computations we would have an \texttt{ExecutorService} that provides access to a configured thread pool. Functions from this library would require an \texttt{ExecutorService} as an argument to provide async functionality. Marking the \texttt{ExecutorService} as implicit allows us to omit it from the function calls and unclutter our code, as shown in listings \ref{code:without_implicit} and \ref{code:with_implicit}
+A function can declare that some of its arguments are {\it implicit}. These arguments can be omitted at the call site, and the compiler will perform an {\it implicit lookup}. This action searches in a number of places for a value of the type declared in the argument list, and applies it if found. Implicit values can also be retrieved using the built-in function \texttt{implicitly[T]}. A common use is in functions that want to separate arguments that are logically part of the computation from arguments that represent some execution context. For example, in a library that implements support for asynchronous computations we would have an \texttt{ExecutorService} that provides access to a configured thread pool. Functions from this library would require an \texttt{ExecutorService} as an argument to executo work on other threads. Marking the \texttt{ExecutorService} as implicit allows us to omit it from the function calls and unclutter our code, as shown in listings \ref{code:without_implicit} and \ref{code:with_implicit}
 
 \begin{lstlisting}[caption=Code without implicits, label=code:without_implicit]
 def async[T](code: => T)(ex: ExecutorService) = ...
 def scheduleOnce[T](code: => T, delay: Duration)(ex: ExecutorService) = ...
 
-val ex: ExecutorService = ???
+val ex: ExecutorService = ...
 val k = async(expensiveOperation1())(ex)
 val v = async(expensiveOperation2())(ex)
 scheduleOnce(doThisAgain(), 1.hour)(ex)
 \end{lstlisting}
 
-\begin{lstlisting}[caption=Code with implicits, label=code:with_implicit, float]
+\begin{lstlisting}[caption=Code with implicits, label=code:with_implicit]
 def async[T](code: => T)(implicit ex: ExecutorService) = ...
 def scheduleOnce[T](code: => T, delay: Duration)(implicit ex: ExecutorService) = ...
 
@@ -41,7 +40,7 @@ scheduleOnce(doThisAgain(), 1.hour)
 \end{lstlisting}
 
 \subsubsection{Implicit conversions}
-Unary functions can be marked as {\it implicit} to become implicit conversions. This allows us to use expressions of type \texttt{A} as if they had type \texttt{B}, as long as we have an implicit conversion of type \texttt{A => B} in scope. This includes method calls, so we can call methods of type \texttt{B} on values of type \texttt{A}. Implicit conversions can be useful when we are using a library that requires a datatype that is different from what is used internally. Listing \ref{code:conversions} shows an interface that uses byte arrays, but we use implicit conversions to transparently use String within our program.
+Unary functions can be marked as {\it implicit} to become implicit conversions. This allows us to use expressions of type \texttt{A} as if they had type \texttt{B}, as long as we have an implicit conversion of type \texttt{A => B} can be found by the implicit lookup mechanism. This includes method calls, so we can call methods of type \texttt{B} on values of type \texttt{A}. Implicit conversions can be useful when we are using a library that requires a datatype that is different from what is used internally. Listing \ref{code:conversions} shows an interface that uses byte arrays, but we use implicit conversions to transparently use String within our program.
 
 \begin{lstlisting}[caption=Implicit conversions, label=code:conversions, float]
 def put(key: Array[Byte], value: Array[Byte]) = ...
@@ -55,10 +54,11 @@ put("k2", "v2")
 val result: String = get("k3")
 \end{lstlisting}
 
-\subsubsection{Implicit classes}
-An implicit class is a shorthand definition of a class with a one-argument constructor alongside an implicit conversion from the argument to that class. This simplifies the implementation of the 'Enriched Class' pattern, which imitates adding methods to existing classes. Listing \ref{code:implicit_classes} shows a simple extension of the Int class. Now the methods \texttt{toHexString} is available on any instance of \texttt{Int} as long as the implicit class can be located.
+Implicit parameters and implicit conversion help us in implementing the 'clean method calls' pattern, since methods and parameters that aren't part of the domain but are necessary in the implementation of the language can be sometimes completely omitted.
 
-%reference
+\subsubsection{Implicit classes}
+An implicit class is a shorthand definition of a class with a one-argument constructor alongside an implicit conversion from the argument to that class. This simplifies the implementation of the 'Enriched Class' pattern, which imitates adding methods to existing classes. Listing \ref{code:implicit_classes} shows a simple extension of the Int class. Now the method \texttt{toHexString} is available on any instance of \texttt{Int} as long as the implicit class can be located.
+
 \begin{lstlisting}[caption=Implicit class, label=code:implicit_classes, float]
 implicit class RichInt(val self: Int) {
   def toHexString: String = java.lang.Integer.toHexString(self)
@@ -67,6 +67,8 @@ implicit class RichInt(val self: Int) {
 val i: Int = 5
 println(i.toHexString)
 \end{lstlisting}
+
+With implicit classes we can further remove non-domain symbols from the language by making implicit the creation of domain objects from objects in the host language.
 
 \subsubsection{Context bounds}
 Context bounds are a way to express more information at the type system level. The expressions \texttt{def f[T: Ordered](x: T) = \ldots} means that for a given type\texttt{T}, there exists an implementation of the trait \texttt{Ordered}, i. e. there exists a value of type Ordered[T]. This is actually just syntactic sugar which compiles to \texttt{def f[T](x: T)(implicit ev: Ordered[T])}. This mechanism is often used to emulate the behavior of Haskell type classes. Listing \ref{code:context_bounds} presents the implementation of the Show type class in Scala, which us slightly more verbose than in Haskell.
@@ -87,10 +89,12 @@ print(2f)
 print("3") //will not compile since there is no implementation od Show[String]
 \end{lstlisting}
 
-There is a similar construct called the view bound. The code \texttt{def f[T <\% B](x: T)} means that the type \texttt{T} can be viewed as as type \texttt{B}, and it desugars to \texttt{def f[T](x: T)(implicit ev: T => B)}. However, this is currently deprecated and will be removed in future versions of Scala, as it can be easil reproduce using context bounds.
+There is a similar construct called the view bound. The code \texttt{def f[T <\% B](x: T)} means that the type \texttt{T} can be viewed as as type \texttt{B}, and it desugars to \texttt{def f[T](x: T)(implicit ev: T => B)}. However, this is currently deprecated and will be removed in future versions of Scala, as it can be easily reproduce using context bounds.
 
 \subsubsection{Implicit lookup}
-%reference
+
+The implicit lookup algorithm checks the foloowing locaions\footnote{http://docs.scala-lang.org/tutorials/FAQ/finding-implicits.html}: 
+
 \begin{enumerate}
 	\item First look in current scope
 	\begin{itemize}
@@ -107,11 +111,11 @@ There is a similar construct called the view bound. The code \texttt{def f[T <\%
 	\end{itemize}
 \end{enumerate}
 
-The implicits found in group 1 take precedence over implicits found in group 2. If multiple matching implicits are found, we choose the one with the most specific type. Otherwise, if none are found or we cannot disambiguate the implicit, the compilation fails.
-        
+The implicits found in group 1 take precedence over implicits found in group 2. If multiple matching implicits are found, we choose the one with the most specific type (this requires another, slightly more technical computation). Otherwise, if none are found or we cannot disambiguate the implicit, the compilation fails.
+
 \subsubsection{Criticisms}
 
-Criticizing implicits is a common thread in online discussions about Scala. While not actually broken, implicits are a powerful and complex feature that is very prone to abuse.
+Criticizing implicits is a common thread in online discussions about Scala \autocite{Plush:2015, lakes:2009, Allan:2013, Hale:2011}. While not actually broken, implicits are a powerful and complex feature that is very prone to abuse.
 
 The Scala collections library is an interesting example of implicit parameter (ab)use. Sometimes calles the "Longest suicide note in history" \autocite{lakes:2009}, it makes uses implicit parameters and the \texttt{CanBuildFrom} type class to provide robust operations on collections. Looking at the \texttt{map} method of \texttt{List[A]} which we expect to have the type signature \texttt{def map[B](f: A => B): List[B]}. The actual signature is \texttt{def map[B, That](f: A => B)(implicit bf: CanBuildFrom[Repr, B, That]): That}. Listing~\ref{code:bitset} (taken from a response to \autocite{lakes:2009}) shows that the implicit parameter in \texttt{map} is used to find the best possible return type for that method. While this is a powerful result, it presents less like functionality and more like a leaky abstraction. This is underlined by the fact that in newer versions of Scala the documentation doesn't show the real type, but the one that we expected in the beginning.
 
@@ -126,7 +130,7 @@ scala> val displayed = bits map { _.toString + "!" }
 displayed: scala.collection.immutable.Set[java.lang.String] = Set(1!, 2!, 3!)
 \end{lstlisting}
 
-Leaky abstractions expose the main problem of implicits, which is the large cognitive load to reason about them. When we encounter a problem or confusion with implicits, we cannot immediately say where a value came from. We need to know the implicit lookup algorithm which, while not complex, is not intuitive. Poorly designed implicit conversions can also hide errors. Every time there is a type error in a program, the implicit lookup algorithm tries to find a conversion which will let it compile. We now run a risk of accidentally compiling code that should have caused a type error because it just happened to find a fitting conversion.
+Leaky abstractions expose the main problem of implicits, which is the large amount of mental effort needed when reasoning about them. When we encounter a problem or confusion with implicits, we cannot immediately say where a value came from. We need to know the implicit lookup algorithm which, while not complex, is not intuitive. Poorly designed implicit conversions can also hide errors. The implicit lookup algorithm fires every time there is a type error in a program, and tries to find a conversion which will let it compile. We now run a risk of accidentally compiling code that should have caused a type error because it just happened to find a fitting conversion.
 
 \section{Method invocation}
 
@@ -141,17 +145,19 @@ Basic Scala method invocation is identical to Java method invocation. However, t
 
 These syntax options are crucial in enabling the Method Chaining and Clean Method Calls patterns. However care must be taken to understand the rules of how expressions like these are parsed. Code listings \ref{code:dotless1} and \ref{code:dotless2} show two expressions that look extremely similar. However, the expression in listing \ref{code:dotless1} compiles to \texttt{a.m(m).b}, whereas the other expression is actually two expressions: \texttt{a.m(); m.b()}. In a well designed language this would usually cause a compilation error, but some DSLs might want to reuse the same name in different contexts, which could lead to both code snippets being valid.
 
-
-\begin{lstlisting}[caption=Parsing quirks, label=code:dotless1]
+\begin{minipage}[t]{0.4\textwidth}
+\begin{lstlisting}[label=code:dotless1]
 a m
 m b
 \end{lstlisting}
-
-\begin{lstlisting}[caption=Parsing quirks, label=code:dotless2]
+\end{minipage}\hfill
+\begin{minipage}[t]{0.4\textwidth}
+\begin{lstlisting}[label=code:dotless2]
 a m
 
 m b
 \end{lstlisting}
+\end{minipage}
 
 \section{Operator overloading}
 
@@ -170,11 +176,11 @@ The ability to define custom operations allows us to implement the Operator Expr
 
 Macros in Scala are a type-safe way to facilitate compile-time metaprogramming. Unlike text-based substitution seen in languages like C, Scala macros transform the abstract syntax tree of parsed and correctly typed Scala code. The macro implementation is plain Scala code, but since the implementation needs to be available to the compiler, we need to compile it earlier.
 
-We can use macros as a way to incorporate information that is available at compile time into code. This is best shown by \texttt{sqltyped}, a library which infers type information from SQL schema and query statements. Since it does this before compilation, we can have code that has the SQL snippet \texttt{select name, age from person where age > ?} which is automatically transformed into a function of type \texttt{Int => List[{ age: Int, name: String}]}.
+We can use macros as a way to incorporate information that is available at compile time into code. This is best shown by \texttt{sqltyped}, a library which infers type information from SQL schema and query statements. Since it does this before compilation, we can have code that has the SQL snippet \texttt{select name, age from person where age > ?} which is automatically transformed into a function of type \texttt{Int => List[\{ age: Int, name: String\}]}.
 
 The macro mechanism in Scala is extremely powerful. It can be used in the implementation of many notation patterns, especially since we can write code that better models the domain, and later transform it with macros to conform better to the capabilities of the host language.
 
-Macro support in Scala is currently marked as experimental and is very actively being worked on. As such, between Scala versions 2.10 and 2.11 there have been several breaking changes and deprecations. This makes macros seem not to be a safe avenue of feature implementation.
+Macro support in Scala is currently marked as experimental and is very actively being worked on. As such, between Scala versions 2.10 and 2.11 there have been several breaking changes and deprecations. Scala 2.12 will not add new features. Instead, work will be focused on a net metaprogramming API, \texttt{scala.meta}. This makes macros seem not to be a safe avenue of feature implementation.
 
 \section{Object initialization expressions}
 
@@ -210,7 +216,7 @@ val conn = new Connection with Encryption {
 
 The Scala type system provides many features that aid developers in implementing correct code. Local type inference is important to the notation aspect of DSLs since it allows us to omit type annotation in variable declarations, and possibly keep it out of the DSL entirely. Of course to help us build languages that are robust and extensible we can use all the other features of the Scala type system like variance annotations, type bounds, type members, structural typing, higher-kinded types, or existential types.
 
-The issue with the type system is that with this large and continually growing amount of features it is easier to find strange corner cases that are at best counterintuitive and at worst broken. For example, Scala doesn't have full Hindley–Milner type inference. Instead, an expression is fully typed in the place that it appears in, and sometimes needs to be guided. This can lead to a situation like in listing~\ref{code:inference}, where the variable \texttt{b} was inferred to have type \texttt{X[Nothing]}. This makes it problematic to apply common expression extraction, because we could accidentaly remove code that guides the inference.
+The issue with the type system is that with this large and continually growing amount of features it is easier to find strange corner cases that are at best counterintuitive and at worst broken. For example, Scala doesn't have full Hindley–Milner type inference. Instead, an expression is fully typed in the place that it appears in, and sometimes needs to be guided. This can lead to a situation like in listing~\ref{code:inference}, where the variable \texttt{b} was inferred to have type \texttt{X[Nothing]}. This makes it problematic to apply common expression extraction, because we could accidentally remove code that guides the inference.
 
 \begin{lstlisting}[caption=Local inference, label=code:inference]
 class X[T] {
@@ -283,7 +289,20 @@ printName("John")
 printName(firstName = "John", lastName = "Doe", middleName = "F")
 \end{lstlisting}
 
-\subsections{Objects as modules}
+\subsection{Objects as modules}
+
+In Scala, every named function must be a method of a class instance. Normally, this would mean that every methods call would either be called on a named class instance, or be made inside a class, where we have a default reference \texttt{this}. However, Scala provides the ability to import into scope members of a class instance with the same notation used for importing class definitions. Listing \ref{code:modules} shows how we can use this to encode an ML-style module system. A system like this allows us to bring into scope definitions of values and functions without having to create objects or refer to them by name.
+
+\begin{lstlisting}[caption=Modules, label=code:modules]
+object module {
+  def f = ...
+  def g() = ...
+}
+
+import module._ //imports all members of object Module
+f //Calls Module.f()
+\end{lstlisting}
 
 \section{Summary}
-Each feature is barely enough rope to hang ourselves, but we can tie the ropes together.
+
+We have presented several Scala features that we feel are important components in the implementation of internal DSLs. They are all accompanied by critical opinions and caveats. While no one feature can be pointed to as broken, the accumulated cognitive load when interacting with several features at the same time can prove to be overwhelming. This is compounded by the fact that there is no real concept of 'idiomatic Scala' within the community, which leads to fragmentation in coding styles and opinions (from \cite{Hale:2011} "a best practice emerged: ignore the community entirely"). We leave with two facts useful when designing DSLs: that Scala features should be used very carefully, and that language design is hard.
