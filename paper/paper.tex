@@ -9,7 +9,6 @@
 \usepackage[style=ieee, backend=bibtex, block=ragged]{biblatex}
 \usepackage{url}
 \usepackage{breakurl} 
-\usepackage[breaklinks]{hyperref}
 
 \lstset{ %
   basicstyle=\ttfamily\footnotesize,
@@ -60,7 +59,7 @@
 %\renewcommand \qedsymbol {\ensuremath{\square}}
 % ...
 %%%%%
-\addbibresource{bibliography.bib}
+\bibliography{bibliography}
 \begin{document}
 
 %%%%% POCZĄTEK ZASADNICZEGO TEKSTU PRACY
@@ -68,7 +67,6 @@
 %\chapter{Wprowadzenie}
 
 %\ldots
-
 
 \input{chapter-dsl.tex}
 
