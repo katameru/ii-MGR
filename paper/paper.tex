@@ -6,9 +6,11 @@
 \usepackage[utf8]{inputenc}
 \usepackage{listings}
 \usepackage{csquotes}
-\usepackage[style=ieee, backend=bibtex, block=ragged]{biblatex}
+\usepackage[style=numeric, backend=bibtex, block=ragged]{biblatex}
 \usepackage{url}
-\usepackage{breakurl} 
+\usepackage{breakurl}
+\usepackage[breaklinks]{hyperref}
+\def\UrlBreaks{\do\/\do-}
 
 \lstset{ %
   basicstyle=\ttfamily\footnotesize,
@@ -46,19 +48,7 @@
 %\advisorgen    {dr. Jana Kowalskiego} % Nazwisko promotora w dopelniaczu
 %%%%%
 
-%%%%% WLASNE DODATKOWE PAKIETY
-%
-%\usepackage{graphicx,listings,amsmath,amssymb,amsthm,amsfonts,tikz}
-%
-%%%%% WŁASNE DEFINICJE I POLECENIA
-%
-%\theoremstyle{definition} \newtheorem{definition}{Definition}[chapter]
-%\theoremstyle{remark} \newtheorem{remark}[definition]{Observation}
-%\theoremstyle{plain} \newtheorem{theorem}[definition]{Theorem}
-%\theoremstyle{plain} \newtheorem{lemma}[definition]{Lemma}
-%\renewcommand \qedsymbol {\ensuremath{\square}}
-% ...
-%%%%%
+
 \bibliography{bibliography}
 \begin{document}
 
@@ -74,11 +64,7 @@
 
 \input{chapter-implementation.tex}
 
-\begingroup
-\raggedright
-\sloppy
 \printbibliography
-\endgroup
 %%%%% BIBLIOGRAFIA
 
 %\begin{thebibliography}{1}
