@@ -46,8 +46,12 @@ Unary functions can be marked as {\it implicit} to become implicit conversions. 
 def put(key: Array[Byte], value: Array[Byte]) = ...
 def get(key: Array[Byte]): Array[Byte] = ...
 
-implicit def bytesToString(bytes: Array[Byte]): String = new String(bytes)
-implicit def stringToBytes(string: String): Array[Byte]= string.getBytes
+implicit def bytesToString(bytes: Array[Byte]): String = {
+  new String(bytes)
+}
+implicit def stringToBytes(string: String): Array[Byte]= {
+  string.getBytes
+}
 
 put("k1", "v1")
 put("k2", "v2")
@@ -82,11 +86,15 @@ def print[T: Show](t: T) = {
   println(str)
 }
 
-implicit val showableInt: Show[Int] = new Show[Int] { def show(i: Int): String = i.toString }
-implicit val showableFloat: Show[Float] = new Show[Float] { def show(f: Float): String = f.toString }
+implicit val showableInt: Show[Int] = new Show[Int] {
+  def show(i: Int): String = i.toString
+}
+implicit val showableFloat: Show[Float] = new Show[Float] {
+  def show(f: Float): String = f.toString
+}
 print(1)
 print(2f)
-print("3") //will not compile since there is no implementation od Show[String]
+print("3") //will not compile since there is no implementation of Show[String]
 \end{lstlisting}
 
 There is a similar construct called the view bound. The code \texttt{def f[T <\% B](x: T)} means that the type \texttt{T} can be viewed as as type \texttt{B}, and it desugars to \texttt{def f[T](x: T)(implicit ev: T => B)}. However, this is currently deprecated and will be removed in future versions of Scala, as it can be easily reproduce using context bounds.
@@ -132,34 +140,35 @@ displayed: scala.collection.immutable.Set[java.lang.String] = Set(1!, 2!, 3!)
 
 Leaky abstractions expose the main problem of implicits, which is the large amount of mental effort needed when reasoning about them. When we encounter a problem or confusion with implicits, we cannot immediately say where a value came from. We need to know the implicit lookup algorithm which, while not complex, is not intuitive. Poorly designed implicit conversions can also hide errors. The implicit lookup algorithm fires every time there is a type error in a program, and tries to find a conversion which will let it compile. We now run a risk of accidentally compiling code that should have caused a type error because it just happened to find a fitting conversion.
 
-\section{Method invocation}
+\subsection{Method invocation}
 
 Basic Scala method invocation is identical to Java method invocation. However, there are various alternatives to that notation that Scala allows.
 
 \begin{itemize}
 	\item When invoking methods that don't take arguments, we can omit the empty parentheses (\texttt{list.size} instead of \texttt{list.size()}).
 	\item When invoking a methods that takes one parameter, we can use the infix notation, that is omit the dot and parentheses ((\texttt{list append 1} instead of \texttt{list.append(1)}))
-	\item We can chain infix method invocations. \texttt{a m1 a1 m2 a2 m3} compiles as \texttt{a.m1(a1).m2(a2).m3()}
+	\item We can chain infix method invocations. \texttt{a m1 a1 m2 a2 m3} compiles as\\ \texttt{a.m1(a1).m2(a2).m3()}
 	\item If we keep parentheses around methods with multiple arguments, we can omit all dots in an expression. \texttt{a m1(a1, a2) m2 a2} will compile to \texttt{a.m1(a1, a2).m2(a2)}
 \end{itemize}
 
-These syntax options are crucial in enabling the Method Chaining and Clean Method Calls patterns. However care must be taken to understand the rules of how expressions like these are parsed. Code listings \ref{code:dotless1} and \ref{code:dotless2} show two expressions that look extremely similar. However, the expression in listing \ref{code:dotless1} compiles to \texttt{a.m(m).b}, whereas the other expression is actually two expressions: \texttt{a.m(); m.b()}. In a well designed language this would usually cause a compilation error, but some DSLs might want to reuse the same name in different contexts, which could lead to both code snippets being valid.
+These syntax options are crucial in enabling the Method Chaining and Clean Method Calls patterns. However care must be taken to understand the rules of how expressions like these are parsed. The following code listings show two expressions that look extremely similar. However, the expression in the first listing compiles to \texttt{a.m(m).b}, whereas the other expression is actually two expressions: \texttt{a.m(); m.b()}. In a well designed language this would usually cause a compilation error, but some DSLs might want to reuse the same name in different contexts, which could lead to both code snippets being valid.
 
 \begin{minipage}[t]{0.4\textwidth}
-\begin{lstlisting}[label=code:dotless1]
+\begin{lstlisting}[caption=One expression]
 a m
 m b
 \end{lstlisting}
-\end{minipage}\hfill
+\end{minipage}
+\hfill
 \begin{minipage}[t]{0.4\textwidth}
-\begin{lstlisting}[label=code:dotless2]
+\begin{lstlisting}[caption=Two expressions]
 a m
 
 m b
 \end{lstlisting}
 \end{minipage}
 
-\section{Operator overloading}
+\subsection{Operator overloading}
 
 Scala allows us to define methods whose names contain symbols. When combined with infix method invocation we get a notation that resembles operator overloading, but is in fact just arbitrary method invocation. There are two special cases: 
 \begin{itemize}
@@ -172,7 +181,7 @@ There is a small inconsistency between normal methods and symbolic operators. Th
 The ability to define custom operations allows us to implement the Operator Expressions pattern. We can emulate notation used by domain experts and create our own shorthands. The problem with using custom operators is that if we introduce new symbols that are unrelated to the domain we run the risk of creating completely unreadable code. When we're working in the domain of matrix manipulation, we can be reasonably confident as to what effect symbols like \texttt{+} or \texttt{*} have. But in a DSL used to create API endpoints, operators like \texttt{:++>>} or \texttt{<|*|>} are completely opaque, and worst of all, ungoogleable. Martin Odersky recently wrote: "But in retrospect I think maybe they did give a bad example for others to go overboard with symbolic operators." \autocite{Odersky:2016}
 
 
-\section{Macros}
+\subsection{Macros}
 
 Macros in Scala are a type-safe way to facilitate compile-time metaprogramming. Unlike text-based substitution seen in languages like C, Scala macros transform the abstract syntax tree of parsed and correctly typed Scala code. The macro implementation is plain Scala code, but since the implementation needs to be available to the compiler, we need to compile it earlier.
 
@@ -182,7 +191,7 @@ The macro mechanism in Scala is extremely powerful. It can be used in the implem
 
 Macro support in Scala is currently marked as experimental and is very actively being worked on. As such, between Scala versions 2.10 and 2.11 there have been several breaking changes and deprecations. Scala 2.12 will not add new features. Instead, work will be focused on a net metaprogramming API, \texttt{scala.meta}. This makes macros seem not to be a safe avenue of feature implementation.
 
-\section{Object initialization expressions}
+\subsection{Object initialization expressions}
 
 Scala supports using anonymous classes in programs. An anonymous class is a class that is defined and instantiated inline with code, often because it does not need to be reused. Anonymous classes can still use the normal inheritance mechanisms, so we can have on-off classes that are concise and powerful. In the context of DSLs, we can use this capability to implement the Block Scope and Supertype patterns. On listing~\ref{code:anonymous} we show how a DSL might use anonymous classes. The \texttt{Connection} and \texttt{Encryption} traits are part of the DSL implementation and encapsulate domain models relating to properties of connections. This usage gives us:
 \begin{itemize}
@@ -218,7 +227,7 @@ The Scala type system provides many features that aid developers in implementing
 
 The issue with the type system is that with this large and continually growing amount of features it is easier to find strange corner cases that are at best counterintuitive and at worst broken. For example, Scala doesn't have full Hindley–Milner type inference. Instead, an expression is fully typed in the place that it appears in, and sometimes needs to be guided. This can lead to a situation like in listing~\ref{code:inference}, where the variable \texttt{b} was inferred to have type \texttt{X[Nothing]}. This makes it problematic to apply common expression extraction, because we could accidentally remove code that guides the inference.
 
-\begin{lstlisting}[caption=Local inference, label=code:inference]
+\begin{lstlisting}[caption=Local inference, label=code:inference, float]
 class X[T] {
   def m(x: T) = this
 }
@@ -226,64 +235,24 @@ class X[T] {
 val am = new X().m(1)
 
 val b = new X()
-val bm = b.m(1)
+val bm = b.m(1) //Won't compile
 
 val c = new X[Int]
 val cm = c(1)
 \end{lstlisting}
 
-Listing \ref{code:existentials} is a more convoluted, with its use of type bounds and existential types. However, it shows that sometimes the inference needs to be very explicitly guided to compile simple and evidently correct at all. It is especially confusing for code at line \ref{line:why}, where we have to annotate a value with a type that it already has.
-
-
-\begin{lstlisting}[caption=Existential inference, label=code:existentials, escapechar=|, float, floatplacement=H]
-trait InternalBound
-
-class InternalImpl extends InternalBound
-
-trait Container {
-  type Internal <: InternalBound
-}
-
-class ContainerImpl extends Container {
-  type Internal = InternalImpl
-}
-
-object Test {
-  type ContainerWithInternal = (T, T#Internal) forSome { type T <: Container; }
-  type CS = (A, B) forSome { type A <: Container; type B <: A#Internal }
-
-  def construct[T <: Container](i: T, e: T#Internal): ContainerWithInternal = (i, e)
-
-  //Type error
-  //def constructCS1[A <: Container](a: A, b: A#Internal): CS = (a, b) |\label{line:why}|
-  def constructCS2[A <: Container](a: A, b: A#Internal): CS = (a, b): (A, A#Internal)
-
-  def main(args: Array[String]): Unit = {
-
-    val container = new ContainerImpl
-    val internal = new container.Internal()
-    val internalWithCast: container.Internal = new container.Internal()
-
-    //Type errors
-    //val res1: ContainerWithInternal = (container, internal)
-    //val res2: ContainerWithInternal = construct(container, internal)
-    val res3: ContainerWithInternal = construct(container, (internal: container.Internal))
-    val res4: ContainerWithInternal = construct[ContainerImpl](container, internal)
-
-    val res5: ContainerWithInternal = (container, internalWithCast)
-    val res6: ContainerWithInternal = construct(container, internalWithCast)
-    val res7: ContainerWithInternal = construct[ContainerImpl](container, internalWithCast)
-  }
-}
-\end{lstlisting}
+Listing \ref{code:existentials} is a more convoluted with its use of type bounds and existential types. However, it shows that sometimes the inference needs to be very explicitly guided to compile simple and evidently correct expressions at all. It is especially confusing for code at line \ref{line:why}, where we have to annotate a value with a type that it already has.
 
 \subsection{Named parameters \& default arguments}
 
 The named parameters feature in Scala allows us to indicate which value to use as which parameter in a function. We can also define default values for arguments, so that we can skip them completely. With this we can implement the keyword parameters pattern, as seen in listing \ref{code:named}.
 
 \begin{lstlisting}[caption=Named parameters \& default arguments, label=code:named]
-def printName(firstName: String, middleName: String = "", lastName: String = "") = {
-  println(s"\$firstName \$middleName \$lastName")
+def printName(
+  firstName: String,
+  middleName: String = "",
+  lastName: String = "") = {
+    println(List(firstName, middleName, lastName).mkString(" "))
 }
 printName("John")
 printName(firstName = "John", lastName = "Doe", middleName = "F")
@@ -293,7 +262,7 @@ printName(firstName = "John", lastName = "Doe", middleName = "F")
 
 In Scala, every named function must be a method of a class instance. Normally, this would mean that every methods call would either be called on a named class instance, or be made inside a class, where we have a default reference \texttt{this}. However, Scala provides the ability to import into scope members of a class instance with the same notation used for importing class definitions. Listing \ref{code:modules} shows how we can use this to encode an ML-style module system. A system like this allows us to bring into scope definitions of values and functions without having to create objects or refer to them by name.
 
-\begin{lstlisting}[caption=Modules, label=code:modules]
+\begin{lstlisting}[caption=Modules, label=code:modules, float]
 object module {
   def f = ...
   def g() = ...
