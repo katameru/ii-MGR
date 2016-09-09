@@ -1,6 +1,3 @@
-% Opcje klasy 'iithesis' opisane sa w komentarzach w pliku klasy. Za ich pomoca
-% ustawia sie przede wszystkim jezyk i rodzaj (lic/inz/mgr) pracy, oraz czy na
-% drugiej stronie pracy ma byc skladany wzor oswiadczenia o autorskim wykonaniu.
 \documentclass[english, mgr]{iithesis}
 
 \usepackage[utf8]{inputenc}
@@ -10,6 +7,7 @@
 \usepackage{url}
 \usepackage{breakurl}
 \usepackage[breaklinks]{hyperref}
+\usepackage{caption}
 \def\UrlBreaks{\do\/\do-}
 
 \lstset{ %
@@ -25,38 +23,18 @@
   stepnumber=1
 }
 
-\usepackage{caption}
-
-%%%%% DANE DO STRONY TYTUŁOWEJ
-% Niezaleznie od jezyka pracy wybranego w opcjach klasy, tytul i streszczenie
-% pracy nalezy podac zarowno w jezyku polskim, jak i angielskim.
-% Pamietaj o madrym (zgodnym z logicznym rozbiorem zdania oraz estetyka) recznym
-% zlamaniu wierszy w temacie pracy, zwlaszcza tego w jezyku pracy. Uzyj do tego
-% polecenia \fmlinebreak.
-\polishtitle    {Wymagający złamania wierszy\fmlinebreak tytuł pracy w~języku polskim}
-\englishtitle   {English title}
-\polishabstract {\ldots}
-\englishabstract{\ldots}
-% w pracach wielu autorow nazwiska mozna oddzielic poleceniem \and
+\polishtitle    {Języki dziedzinowe w Scali}
+\polishabstract {Języki dziedzinowe to języki wyspecjalizowane dla konkretnej dziedziny. W tej pracy badamy wzorce, które mogą być użyte przy projektowaniu DSLa aby lepiej spełniał on swoje cele. Przyglądamy się też aspektom języka Scala, które mogą być użyte przy implementacji tych wzorców.}
+\englishtitle   {Domain-specific languages in Scala}
+\englishabstract{Domain-specific languages are languages specialized for a specific domain. In this paper we explore patterns that a DSL can incorporate into its design to achieve its goals. We also look at how features of the Scala programming language can be used in the implementation of these patterns.}
 \author         {Marcin Januszkiewicz}
-% w przypadku kilku promotorow, lub koniecznosci podania ich afiliacji, linie
-% w ponizszym poleceniu mozna zlamac poleceniem \fmlinebreak
 \advisor        {dr Małgorzata Biernacka}
 %\date          {}                     % Data zlozenia pracy
-% Dane do oswiadczenia o autorskim wykonaniu
-%\transcriptnum {}                     % Numer indeksu
-%\advisorgen    {dr. Jana Kowalskiego} % Nazwisko promotora w dopelniaczu
-%%%%%
-
 
 \bibliography{bibliography}
 \begin{document}
 
-%%%%% POCZĄTEK ZASADNICZEGO TEKSTU PRACY
-
-%\chapter{Wprowadzenie}
-
-%\ldots
+\input{chapter-introduction.tex}
 
 \input{chapter-dsl.tex}
 
@@ -64,11 +42,10 @@
 
 \input{chapter-implementation.tex}
 
-\printbibliography
-%%%%% BIBLIOGRAFIA
+\input{chapter-conclusions.tex}
 
-%\begin{thebibliography}{1}
-%\bibitem{example} \ldots
-%\end{thebibliography}
+\input{appendix-code-listings.tex}
+
+\printbibliography
 
 \end{document}
