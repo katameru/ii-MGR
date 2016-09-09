@@ -54,7 +54,7 @@
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesClass{iithesis}
 
-\LoadClass[a4paper,11pt,onecolumn,openright,titlepage]{report}
+\LoadClass[a4paper,11pt,onecolumn,twoside,openright,titlepage]{report}
 
 \RequirePackage{ifthen}
 \newboolean{Long@Abstract}
@@ -104,7 +104,7 @@
 
 \RequirePackage[OT4]{fontenc}
 \RequirePackage{babel,titling,geometry}
-\geometry{margin=3cm,bindingoffset=1cm,a4paper,onecolumn}
+\geometry{margin=3cm,bindingoffset=1cm,a4paper,onecolumn,twoside}
 
 \pagestyle{headings}
 
@@ -122,6 +122,9 @@
   \renewcommand \thesubsubsection {\thesubsection \arabic{subsubsection}.}
   \renewcommand \chaptermark  [1] {\markboth{\MakeUppercase{\chaptername\ \thechapter{} #1}}{}}
   \renewcommand \sectionmark  [1] {\markright{\MakeUppercase{\thesection{} #1}}{}}
+  \renewcommand \theequation      {\ifnum \c@chapter>\z@ \thechapter\fi \@arabic\c@equation}
+  \renewcommand \thefigure        {\ifnum \c@chapter>\z@ \thechapter\fi \@arabic\c@figure}
+  \renewcommand \thetable         {\ifnum \c@chapter>\z@ \thechapter\fi \@arabic\c@table}
   \renewcommand \appendix {\par
     \setcounter{chapter}{0}
     \setcounter{section}{0}
