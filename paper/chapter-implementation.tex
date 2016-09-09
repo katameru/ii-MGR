@@ -1,16 +1,20 @@
-\chapter{Implementation}
+\chapter{Case studies}
 
-As part of this thesis I wrote an example project \texttt{DSLSample}. It is a Scala implementation of an internal DSL used to compute statistics from arbitrary datasets. The implementation actually contains two internal DSLs - one deep and one shallow. The deep embedding describes data extraction \& aggregation and provides a way to compile this description into code that computes the statistics. The shallow embedding provides a shorthand way of constructing these descriptions and attempts to take on a vaguely natural syntax.
+In this chapter we look at two DSLs - one which was written for the purposes of this thesis, and one which is one the most popular DSLs for Scala today. We will explore the techniques used to achieve the goals of the language design.
+
+\section{stats-collector}
+
+As part of this thesis I wrote an example project \texttt{stats-collector}. It is a Scala implementation of an internal DSL used to compute statistics from arbitrary datasets. The implementation actually contains two internal DSLs - one deep and one shallow. The deep embedding describes data extraction and aggregation and provides a way to compile this description into code that computes the statistics. The shallow embedding provides a shorthand way of constructing these abstract descriptions and attempts to take on a vaguely natural syntax.
 
 This code is heavily based on code used in production at \texttt{Neurosoft~Sp.~z~o.o.}. We present a slightly simpler and cleaner version, not encumbered with various historical necessities.
 
-\section{The problem}
+\subsection{The problem}
 
 We formulate the 'stats collection' problem as follows: we have a dataset that is a sequence of rows. Each row contains a mapping from column name to an arbitrary string value. A row might not contain any values. We want a way to easily compute statistics over this dataset. For example, given a dataset of vehicles that passed through an intersection, we want to compute the average speed of all vehicles, but also the average speed grouped by the type of the vehicle (e.g. car, truck). We want our DSL to be extensible so that we can easily add more ways of interpreting and aggregating the data. We also want it to be simple, so that new statistics (e. g. average speed grouped by vehicle color) can be added without much effort by people not familiar with the system.
 
-\section{Language design}
+\subsection{Language design}
 
-First, we want to show an example use of the completed language. Listing~\ref{code:stats_sample} shows an example configuration that computes four statistics, two grouped by vehicle type and two total. The \texttt{speed} statistic take values from the \texttt{vehicle.speed} column, parses them as floats and computes the mean. The \texttt{speed.events} statistic doesn't parse the column and just how many \texttt{vehicle.speed} values were present. Listing~\ref{code:stats_use} shows how we can use this configuration. With the configuration we create a compiler and build an entry processor. Then we can simply use this processor on an arbitrary dataset and output some result.
+First, we want to show an example use of the completed language. Listing~\ref{code:stats_sample} shows an example configuration that computes four statistics, two grouped by vehicle type and two total. The \texttt{speed} statistic take values from the \texttt{vehicle.speed} column, parses them as floats and computes the mean. The \texttt{speed.events} statistic doesn't parse the column and just lists how many \texttt{vehicle.speed} values were present. Listing~\ref{code:stats_use} shows how we can use this configuration on actual data. The compiler is used to create an entry processor from the configuration. Then we can simply use this processor on an arbitrary dataset and output some result.
 
 \begin{lstlisting}[caption=Defined statistics, label=code:stats_sample]
 package pl.wroc.uni.ii.mjanuszkiewicz
@@ -46,140 +50,87 @@ entries.foreach(processor.processEntry(_))
 println(processor.outputResult)
 \end{lstlisting}
 
-\subsection{Deep DSL}
+\subsection{The Deep DSL}
 
 \subsubsection{Describing statistics}
-Now that we know how our language should look, we can show how the embedded description language is structured. We can see the basic hierarchy: a single column aggregation description needs to describe the source data it is using, the aggregation method it is using, and how to identify it. Listing~\ref{code:cad} shows the datatype used. Since we need aggregate separately for each groupBy value (e. g. if we group by vehicle.type we aggregate data separately for cars, trucks, etc.) we need to separate the description from the aggregate instance.
-
-\begin{lstlisting}[caption=ColumnAggregateDescription, label=code:cad]
-case class ColumnAggregateDescription[ColumnType](
-    sourceColumnDescription: SourceColumnDescription[ColumnType],
-    aggregateBuilder: AggregateBuilder[ColumnType],
-    outputName: String) {
-  def fresh: ColumnAggregate[ColumnType] = new ColumnAggregate(sourceColumnDescription, aggregateBuilder.fresh, outputName)
-}
-
-class ColumnAggregate[-ColumnType](
-    sourceColumnDescription: SourceColumnDescription[ColumnType],
-    aggregate: Aggregate[ColumnType],
-    outputName: String) {
-  def add(entry: Entry) = sourceColumnDescription.parseEntry(entry).foreach { aggregate.add(_) }
-  def output: Seq[(String, String)] = aggregate.getOutput
-}
-\end{lstlisting}
+Now that we know how our language should look, we can show how the embedded description language is structured. We can see the basic hierarchy: a single aggregation description needs to describe the source data it is using, the aggregation method it is using, and how to identify it. Listing~\ref{code:cad} shows the datatype used. Since we need to aggregate separately for each groupBy value (e. g. if we group by vehicle.type we aggregate data separately for cars, trucks, etc.) we need a way to create new aggregator instances for each group.
 
 Listing~\ref{code:scd} shows how we describe column parsing. To support a new data type in our DSL we just need to provide a simple implementation of the trait ColumnParser.
 
-\begin{lstlisting}[caption=SourceColumnDescription, label=code:scd]
-case class SourceColumnDescription[+Column](columnName: String, columnParser: ColumnParser[Column]) {
-  def parseEntry(entry: Entry): Option[Column] = {
-    entry.get(columnName) flatMap columnParser.parse orElse columnParser.default
-  }
-}
-
-trait ColumnParser[+A] {
-  def name: String
-  def parse(column: String): Option[A]
-  def default: Option[A] = None
-}
-\end{lstlisting}
-
 Listing~\ref{code:agg} shows the interfaces that need to be implemented for aggregates. We force them to hold mutable state, and we define aggregate output to be simply a sequence of pairs (statistic name, statistic value) already converted to strings. These traits are very simple so that we can easily add more aggregate types to our DSL as needed.
 
-\begin{lstlisting}[caption=Aggregate, label=code:agg, float]
-trait AggregateBuilder[-Elem] {
-  type Aggr <: Aggregate[Elem]
-  def fresh: Aggr
-}
-
-trait Aggregate[-Elem] {
-  def add(e: Elem): this.type
-  def getOutput: Seq[(String, String)]
-}
-\end{lstlisting}
-
-We now have a full image of how a single column aggregation is described. To describe grouped aggregations we simply need to collect the aggregations we want to group and the columns by which we group. Listing~\ref{code:grouped} shows the datatype used to hold grouped descriptions, with some code omitted for brevity.
-
-\begin{lstlisting}[caption=GroupedDescription, label=code:grouped]
-case class GroupedDescription(
-	grouping: Seq[SourceColumnDescription[_]],
-	descriptionsUnderGrouping: SeqColumnAggregateDescription[_]])
-\end{lstlisting}
+We now have a full image of how a single column aggregation is described. To describe grouped aggregations we need to collect the aggregations we want to group and the columns by which we group. Listing~\ref{code:grouped} shows the datatype used to hold grouped descriptions, with some code omitted for brevity.
 
 \subsubsection{Compiling statistics}
 We make compiling the statistics simple by not implementing any optimizations. The \texttt{EntryProcessor} has mutable internal state that maps a pair (parsed grouping values, output name) into a computed aggregate. Listing~\ref{code:processing} presents the logic of processing entries.
 
 \begin{lstlisting}[caption=Processing entries, label=code:processing,float,floatplacement=H]
-for each grouped statistic description
+for each group
   try to parse the grouping columns
-  for each column aggregate description
+  for each aggregate description
     get stored aggregate from internal state or create new one from description
     add parsed value into aggregate
 \end{lstlisting}
 
-\subsection{Shallow DSL}
+\subsection{The Shallow DSL}
 
-The shallow DSL for our language consists of two parts: the \texttt{shallow} package object, and the \texttt{StatsConfiguration} trait. The former provides the implicit classes and named parser and aggregate implementations, while the latter allows us to group the descriptions in a single class using \texttt{select(...).groupBy(...)}.
+The shallow DSL for our language consists of two parts: the \texttt{shallow} package object, and the \texttt{StatsConfiguration} trait. The former provides the implicit classes and named parser and aggregate implementations, while the latter allows us to group descriptions for a dataset in a single scope, an provides the  \texttt{select} and \texttt{groupBy} methods.
 
-\begin{lstlisting}[caption=shallow package object, label=code:shallow,float,floatplacement=H]
-package object shallow {
-  //Parsers
-  def int = IntParser
-  def float = FloatParser
-  def string = StringParser
-  def nothing = EmptyParser
-
-  //Parser default
-  implicit class DefaultParser[A](parser: ColumnParser[A]) {
-    def or(defaultValue: A): ColumnParser[A] = { new WithDefault(parser, defaultValue) }
-  }
-
-  //Aggregators
-  def count[A] = new CounterBuilder[A]
-  def count[A](p: A => Boolean) = new PredicateCounterBuilder[A](p)
-  def mean = new MeanBuilder
-
-  //Describe source column
-  implicit class ColumnNameWrapper(columnName: String) {
-    def as[A](columnParser: ColumnParser[A]): SourceColumnDescription[A] = SourceColumnDescription(columnName, columnParser)
-  }
-
-  //Describe aggregation
-  implicit class SourceDescriptionWrapper[A](description: SourceColumnDescription[A]) {
-    class IncompleteDescription(aggregateBuilder: AggregateBuilder[A]) {
-      def into(outputName: String) = ColumnAggregateDescription(description, aggregateBuilder, outputName)
-    }
-
-    def summarise(aggregateBuilder: AggregateBuilder[A]) = new IncompleteDescription(aggregateBuilder)
-  }
-}
-\end{lstlisting}
-
-\begin{lstlisting}[caption=StatsConfiguration, label=code:config,float,floatplacement=H]
-trait StatsConfiguration {
-  class StubbedGroupedDescriptions(descriptions: Seq[ColumnAggregateDescription[_]]) {
-    private val groupingBuffer: ArrayBuffer[SourceColumnDescription[String]] = ArrayBuffer()
-    private[StatsConfiguration] def finishStub() = GroupedDescription(groupingBuffer.toSeq, descriptions)
-
-    def groupBy(groupings: SourceColumnDescription[String]*): this.type = {
-      groupingBuffer ++= groupings
-      this
-    }
-  }
-
-  private val groupedDescriptions: ArrayBuffer[StubbedGroupedDescriptions] = ArrayBuffer()
-  protected def select(descriptions: ColumnAggregateDescription[_]*): StubbedGroupedDescriptions = {
-    val stubbedDescription = new StubbedGroupedDescriptions(descriptions)
-    groupedDescriptions += stubbedDescription
-    stubbedDescription
-  }
-
-  def configure: Seq[GroupedDescription] = groupedDescriptions.map(_.finishStub())
-}
-\end{lstlisting}
-
-The code in listing~\ref{code:shallow} allows us to write \texttt{"a" as float summarise mean into "b"} by translating it into \texttt{ColumnAggregateDescription(SourceColumnDescription("a", FloatParser), new MeanBuilder, "b"} using the defined implicit classes and names. The code in listing~\ref{code:config} allows classes that use the trait StatsConfiguration to use expressions \texttt{select(...).groupBy(...)} in their body. The \texttt{select} methods gathers all column aggregate descriptions and stores them in an internal object the we can additionally use \texttt{groupBy} on. When the \texttt{configure} method is called we convert these internal objects into grouped descriptions for the compiler.
+The code in listing~\ref{code:shallow} allows us to write \texttt{"a" as float summarise mean into "b"} by expanding it into 
+\begin{verbatim}
+ColumnAggregateDescription(SourceColumnDescription("a", FloatParser), new MeanBuilder, "b")
+\end{verbatim}
+using the defined implicit classes and names. The code in listing~\ref{code:config} allows classes that use the trait StatsConfiguration to use expressions \texttt{select(...).groupBy(...)} in their body. The \texttt{select} methods gathers all column aggregate descriptions and stores them in an internal object the we can additionally use \texttt{groupBy} on. When the \texttt{configure} method is called we convert these internal objects into grouped descriptions for the compiler.
 
 \subsection{Extensions}
 
+This implementation of a \texttt{stats-collector} DSL is meant to show how we can achieve the core functionality of building abstract descriptions of statistics combined with a clean and safe syntax. The problem formulated here is slightly simpler than the problem it is based on. There are ways we can enrich this DSL, from refining the current implementation to adding features:
+\begin{itemize}
+	\item An optimizing compiler - currently the data is processed in an extremely naive way. By analyzing the descriptions we can optimize the execution by, for example, filtering the collection to contain only the columns we need, caching the results of column parsing, or allowing the data to be processed in parallel.
+  \item Composite columns - sometimes we may want to compute a statistic based on more than one column, for example if we measure speed using two methods, we may want to know the distribution of the difference between one speed and the other. We can implement this by introducing a way to preprocess the data before computing statistics.
+  \item Persistence - the dataset changes over time and we want to have up to date statistics, but we can't store the computed aggregates in memory all the time and don't want to redo the entire computation every time the data updates. We can implement a way to save the state of computed aggregates to disk so that when the dataset is updated, we only load the saved state and add the new value.
+\end{itemize}
 
+
+\section{ScalaTest}
+
+ScalaTest is a popular testing tool for the Scala ecosystem. It uses a DSL to allow users to cleanly define test cases inline with Scala code. It supports a variety of testing styles, and exposes extension points so that users can address any special requirements they may have. It is an interesting example for a DSL, since the problem domain is very closely coupled with the host language. This freed the creators of ScalaTest from concerns about separating the DSL syntax from the host language syntax.
+
+In this section we will explore how ScalaTest allows users to structure tests, and how it uses Scala features to achieve clean syntax.
+
+\begin{lstlisting}[caption=Simple test, label=code:test]
+class SetSpec extends FlatSpecLike {
+
+  "An empty Set" should "have size 0" in {
+    assert(Set.empty.size == 0)
+  }
+	
+}
+\end{lstlisting}
+
+A simple test specification is defined in listing \ref{code:test}. The \texttt{FlatSpecLike} trait mixes in all the objects and definitions needed for using the DSL. The implementation is fairly straightforward: an implicit conversion enriches String to contain the \texttt{should} method. Through chained functions and more implicit conversions, we add the test case description and body to some internal state. When the test suite is executed, the test body will run, and a report will be generated.
+
+\begin{lstlisting}[caption=Behavior from implicits, label=code:behavior_implicits, float]
+trait StringShouldWrapperForVerb {
+  def should
+    (right: String)
+    (implicit svsi: StringVerbStringInvocation):
+      ResultOfStringPassedToVerb = ...
+      
+  def should
+    (right: BehaveWord)
+    (implicit svbli: StringVerbBehaveLikeInvocation):
+      BehaveWord = ...
+}
+\end{lstlisting}
+
+Listing \ref{code:behavior_implicits} shows an interesting pattern in the trait that allows us to call \texttt{should} on Strings. We would like to use the same syntax in different testing styles, but different styles mean different behavior. This is solved by making the actual behavior for the \texttt{should} function comes from implicits that are in scope.
+
+\begin{lstlisting}[caption=Macros, label=code:macros, float]
+trait Assertions {
+  def assert(condition: Boolean): Assertion =
+    macro AssertionsMacro.assert
+}
+\end{lstlisting}
+
+The assert function in the simple test is actually a scala macro, as seen on listing \ref{code:macro}. The purpose of these macros in ScalaTest is to have helpful messages from pure Scala expressions, since a pure Scala assertion could only say that an assertion was false. The macro attempts to detect simple expressions \texttt{(a == b)} or \texttt{(a.isEmpty)}, and generates the descriptive messages: \texttt{2 was not 1} or \texttt{List(1, 2) was not empty}. We can also avoid using assertions and explicitly define our expectations by writing code like \texttt{result should have length 3}. There are also implicit classes provided that expose this functionality. Additionally, users can implement custom components so these expressions convey more meaning, for example: \texttt{message should have subJson(expectedJson)}
