@@ -78,7 +78,11 @@ The shallow DSL for our language consists of two parts: the \texttt{shallow} pac
 
 The code in listing~\ref{code:shallow} allows us to write \texttt{"a" as float summarise mean into "b"} by expanding it into 
 \begin{verbatim}
-ColumnAggregateDescription(SourceColumnDescription("a", FloatParser), new MeanBuilder, "b")
+ColumnAggregateDescription(
+  SourceColumnDescription("a", FloatParser),
+  new MeanBuilder,
+  "b"
+)
 \end{verbatim}
 using the defined implicit classes and names. The code in listing~\ref{code:config} allows classes that use the trait StatsConfiguration to use expressions \texttt{select(...).groupBy(...)} in their body. The \texttt{select} methods gathers all column aggregate descriptions and stores them in an internal object the we can additionally use \texttt{groupBy} on. When the \texttt{configure} method is called we convert these internal objects into grouped descriptions for the compiler.
 
@@ -133,4 +137,4 @@ trait Assertions {
 }
 \end{lstlisting}
 
-The assert function in the simple test is actually a scala macro, as seen on listing \ref{code:macro}. The purpose of these macros in ScalaTest is to have helpful messages from pure Scala expressions, since a pure Scala assertion could only say that an assertion was false. The macro attempts to detect simple expressions \texttt{(a == b)} or \texttt{(a.isEmpty)}, and generates the descriptive messages: \texttt{2 was not 1} or \texttt{List(1, 2) was not empty}. We can also avoid using assertions and explicitly define our expectations by writing code like \texttt{result should have length 3}. There are also implicit classes provided that expose this functionality. Additionally, users can implement custom components so these expressions convey more meaning, for example: \texttt{message should have subJson(expectedJson)}
+The assert function in the simple test is actually a scala macro, as seen on listing \ref{code:macros}. The purpose of these macros in ScalaTest is to have helpful messages from pure Scala expressions, since a pure Scala assertion could only say that an assertion was false. The macro attempts to detect simple expressions \texttt{(a == b)} or \texttt{(a.isEmpty)}, and generates the descriptive messages: \texttt{2 was not 1} or \texttt{List(1, 2) was not empty}. We can also avoid using assertions and explicitly define our expectations by writing code like \texttt{result should have length 3}. There are also implicit classes provided that expose this functionality. Additionally, users can implement custom components so these expressions convey more meaning, for example: \texttt{message should have subJson(expectedJson)}
