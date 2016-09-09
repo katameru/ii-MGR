@@ -1,0 +1,12 @@
+\chapter{Introduction}
+
+Domain specific languages are small, focused languages that are designed for use in a specific application domain. Thanks to this focus, they allow developers to quickly and efficiently compose solutions while writing clean and expressive code.
+
+Although domain-specific languages are rarely the focus of a programmers work, many regularly use DSLs in various support roles. Most large project use some form of configurable build tool. Make, Maven, Gradle, Cabal, and sbt all use DSLs to configure their build pipeline. Often when some text data needs to be analyzed we write small shell scripts. Using data obtained from GitHub\footnote{http://github.com/} and processed by the site GitHut\footnote{http://githut.info/}, we can see that out of the top 5 most active languages on GitHub one (CSS) is a DSL. The methodology used means that we don't count supplementary uses of DSLs, like makefiles or helper shell scripts, but only the main language used in a repository.
+
+Domain-specific languages are not a new idea. We can point to a language developed in 1957 used to program machine tools \cite{Ross:1978}. There have been many notable DSLs throughout the years; BNF (1959), Logo (1967), SQL Bourne shell (1977), Emacs Lisp (1989) and HTML (1993). Today, with access to powerful programming languages and libraries, creating languages is vastly simplified. This makes DSLs an important way of creating abstractions. While language design can still be complex, implementing the design is easily achievable for a small team, and can be well worth the effort.
+
+One language that has features that are explicitly designed to be used in implementing DSLs is Scala. Designed in 2004 by Martin Odersky at the Programming Methods Laboratory of \'Ecole Polytechnique F\'ed\'erale de Lausanne, it has the explicit design goal of being a "scalable language" that grows with the needs of its users.
+A fusions of functional and object-oriented programming with a static type system, Scala enables programming styles that range from mimicking Java syntax to emulating type level constructs from Haskell.
+
+In this paper we will talk about some of the programming patterns used to implement DSLs, and how some Scala features can be used to enable the implementation of these patterns. We will also point out some issues that can arise when using these features, and present implementations of real DSLs in Scala.
