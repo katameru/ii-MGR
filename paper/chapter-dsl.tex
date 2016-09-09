@@ -1,8 +1,8 @@
 \chapter{DSL}
 
-\section{Dive into DSLs}
+\section{Introduction to DSLs}
 
-Domain specific languages (DSLs) are computer languages that are designed to express solutions to problems from a specific domain. By tailoring their notation and capabilities they offer a large improvement in productivity in their application domain. It's not easy to formulate a strict definition of what is and isn't a DSL. It can be useful to define DSLs in opposition to general purpose languages (GPLs): DSLs are most expressive when they are used to solve programs in their own domain, whereas GPLs are maintain the same level of expressiveness across many domains. Even then classifying some languages is problematic. Let us consider a spectrum of languages: Bash, PostScript, TeX, CSS, regular expressions, or message filters in email software. Bash is specialized for creating shell scripts, but is still a fully fledged language on its own. On the other hand we could argue that message filters are barely a language at all.
+Domain specific languages (DSLs) are computer languages that are designed to express solutions to problems from a specific domain. By tailoring their notation and capabilities they offer a large improvement in productivity in their application domain. It's not easy to formulate a strict definition of what is and isn't a DSL. It can be useful to define DSLs in opposition to general purpose languages (GPLs): DSLs are most expressive when they are used to solve programs in their own domain, while GPLs are maintain the same level of expressiveness across many domains. Even then classifying some languages is problematic. Let us consider a spectrum of languages: Bash, PostScript, TeX, CSS, regular expressions, or message filters in email software. Bash is specialized for creating shell scripts, but is still a fully fledged language on its own. On the other hand we could argue that message filters are barely a language at all.
 
 DSLs are a powerful element of a developers toolbox, allowing us to write programs that are simpler and much more expressive. One one hand they provide abstractions of concepts that are part of the domain by making them structural elements of the language. On the other hand they can abstract from the details of the computation part of the solution. However, this means that to create a good DSL we must both: 
 \begin{itemize}
@@ -55,7 +55,6 @@ A shallow embedding (sometimes called piggybacking \autocite{Mernik:2005}) struc
 
 In this situation every stage of a programs lifetime, from parsing to execution is handled by the host language. This gives us all the benefits that we would have when writing a program in the host language: development tools, an optimizing compiler/interpreter, and externally verified code generation.
 
-%reference
 \begin{lstlisting}[caption=Example ScalaTest code, label=code:scalatest_sample]
   "A Stack" should "pop values in last-in-first-out order" in {
     val stack = new Stack[Int]
@@ -72,7 +71,7 @@ In this situation every stage of a programs lifetime, from parsing to execution 
   }
 \end{lstlisting}
 
-On Listing \ref{code:scalatest_sample} we have a ScalaTest\footnote{http://www.scalatest.org/} test scenario. We can see that normal Scala code is interspersed with ScalaTest code.
+On Listing \ref{code:scalatest_sample} we have a ScalaTest\footnote{\url{http://www.scalatest.org/}} test scenario. We can see that normal Scala code is interspersed with ScalaTest code.
 The lines
 \begin{verbatim}
 "A Stack" should "pop values in last-in-first-out order" in {
@@ -100,7 +99,7 @@ val rdd = sparkContext.
 println(rdd.sum)
 \end{lstlisting}
 
-Seen on \ref{code:spark_sample} is an abbreviated Apache Spark\textsuperscript{TM}\footnote{http://spark.apache.org/} program. The variable rdd holds metadata that describe the loading and transforming of some data. This will be compiled to an execution plan, optimized, and run on multiple computers, completely transparently to the user.
+Seen on \ref{code:spark_sample} is an abbreviated Apache Spark\textsuperscript{TM}\footnote{\url{http://spark.apache.org/}} program. The variable \texttt{rdd} holds metadata that describe the loading and transforming of some data. This will be compiled to an execution plan, optimized, and run on multiple computers, completely transparently to the user.
 
 While this form of DSL doesn't make any allowances for handy syntax, it can be much more expressive and powerful than a shallow embedding. A shallow embedding needs to map cleanly into the host language. A deep embedding doesn't have that restriction, which opens up the possibility of using more powerful abstractions.
 
