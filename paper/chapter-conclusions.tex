@@ -1,11 +1,32 @@
 \chapter{Conclusions}
 
-We have used Scala with great success to create a non-trivial custom internal \texttt{stats-collector} DSL. \texttt{stats-collector} presents a very restricted syntax that is very easy to learn and use by non-programmers, and very easy to extend by programmers. The language that was developed at \texttt{Neurosoft} that we used as inspiration had the same properties. It was a huge success, as it took the task of adding new statistics from being a major feature request to requiring a minimal localized amount of code change. With put this freed-up developer time into an optimizing expression compiler that reduced computation time, memory pressure and bandwidth use.
+We have used Scala with great success to create a non-trivial custom internal \texttt{stats-collector} DSL.
+\texttt{stats-collector} presents a very restricted syntax that is very easy to learn and use by non-programmers, and very easy to extend by programmers.
+The language that was developed at \texttt{Neurosoft} that we used as inspiration had the same properties.
+It was a huge success, as it took the task of adding new statistics from being a major feature request to requiring a minimal localized amount of code change.
+With put this freed-up developer time into an optimizing expression compiler that reduced computation time, memory pressure and bandwidth use.
 
-We have also seen ScalaTest, a complex internal DSL that is widely used by developers around the world. The test code written in ScalaTest is clean and expressive. ScalaTest provides several testing styles and provides detailed and readable reports about results of test runs. It uses some implicit magic in its implementation, but does it in a way that doesn't leak into user code. It is a good DSL and good piece of software all around.
+We have also seen ScalaTest, a complex internal DSL that is widely used by developers around the world.
+The test code written in ScalaTest is clean and expressive.
+ScalaTest provides several testing styles and provides detailed and readable reports about results of test runs.
+It uses some implicit magic in its implementation, but does it in a way that doesn't leak into user code.
+It is a good DSL and good piece of software all around.
 
-However, having such good results is far from guaranteed. The \texttt{stats-collector} DSL presented here is essentially the third version of the DSL. The clean implementation is a result of slightly simplifying the domain problem and applying lessons learned from the first two versions, and from studying other DSLs. The DSL that is currently used in production at \texttt{Neurosoft} abuses operator overloading severely (with expressions like \texttt{"speed" ! "lane" !! "total.\#lane\#.speed" }), the type system reasonably (unwarranted use of existential types), and implicits slightly (poorly designed implicit classes). And while poor design isn't the fault of the language, features that make it easy to make a poor design and allow it to still be functional are.
+However, having such good results is far from guaranteed.
+The \texttt{stats-collector} DSL presented here is essentially the third version of the DSL.
+The clean implementation is a result of slightly simplifying the domain problem and applying lessons learned from the first two versions, and from studying other DSLs.
+The DSL that is currently used in production at \texttt{Neurosoft} abuses operator overloading severely (with expressions like \texttt{"speed" ! "lane" !! "total.\#lane\#.speed" }), the type system reasonably (unwarranted use of existential types), and implicits slightly (poorly designed implicit classes).
+And while poor design isn't the fault of the language, features that make it easy to make a poor design and allow it to still be functional are.
 
-A critical view of Scala seems to be common within the industry. With LinkedIn minimizing their dependence on Scala\footnote{\url{https://www.quora.com/Is-LinkedIn-getting-rid-of-Scala}}, Yammer moving away from it\footnote{\url{https://www.infoq.com/news/2011/11/yammer-scala}}, and a Twitter executive stating that he would not have chosen Scala again\footnote{\url{http://techbus.safaribooksonline.com/video/software-engineering-and-development/9781491924563}}, it is clear that there is a fundamental issue with the design philosophy of Scala that make it unsuitable for some workflows.
+A critical view of Scala seems to be common within the industry.
+With LinkedIn minimizing their dependence on Scala\footnote{\url{https://www.quora.com/Is-LinkedIn-getting-rid-of-Scala}}, Yammer moving away from it\footnote{\url{https://www.infoq.com/news/2011/11/yammer-scala}}, and a Twitter executive stating that he would not have chosen Scala again\footnote{\url{http://techbus.safaribooksonline.com/video/software-engineering-and-development/9781491924563}}, it is clear that there is a fundamental issue with the design philosophy of Scala that make it unsuitable for some workflows.
 
-Our experience, knowledge, and sensibilities all play a role in the way we write and understand code. Therefore, any verdict we make about whether a language is good or bad can only be a subjective opinion. In my opinion, Scala is an interesting language that gives a lot of power to the programmer. Unfortunately, it gives this power by way of features that, on their own, need to be understood on a very fundamental level to be used correctly. Even worse, when used together the features feel disjointed, like a collection of language experiments and ideas thrown together without care for coherence. This reflects on Scalas ability to implement DSLs. It is a good choice for anyone to implement a simple DSL. It can be a fantastic tool for creating complex DSLs by experienced Scala developers. But the possible pitfalls make it hard for me to describe Scala as the go-to tool for creating DSLs.
+Our experience, knowledge, and sensibilities all play a role in the way we write and understand code.
+Therefore, any verdict we make about whether a language is good or bad can only be a subjective opinion.
+In my opinion, Scala is an interesting language that gives a lot of power to the programmer.
+Unfortunately, it gives this power by way of features that, on their own, need to be understood on a very fundamental level to be used correctly.
+Even worse, when used together the features feel disjointed, like a collection of language experiments and ideas thrown together without care for coherence.
+This reflects on Scalas ability to implement DSLs.
+It is a good choice for anyone to implement a simple DSL.
+It can be a fantastic tool for creating complex DSLs by experienced Scala developers.
+But the possible pitfalls make it hard for me to describe Scala as the go-to tool for creating DSLs.
