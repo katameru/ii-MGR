@@ -1,5 +1,5 @@
 \chapter{Scala features}
-The core philosophy of scala is for it to be a 'scalable language', one which can adapt to the needs of its users \autocite{Odersky:2004}.
+The core philosophy of Scala is for it to be a `scalable language', one which can adapt to the needs of its users \autocite{Odersky:2004}.
 The creators wanted it to be an equally good choice for both small, simple programs and for large components of complex systems.
 To this end, Scala contains many different language features, some of which are explicitly in service of implementing DSLs.
 In this chapter we explore how the various patterns used in DSL implementation are supported in Scala.
@@ -7,10 +7,10 @@ In this chapter we explore how the various patterns used in DSL implementation a
 \section{Parsing}
 
 Scala has good support for creating parsers.
-There is a Scala standard parser combinator library \texttt{scala.util.parsing}, third-party parsing libraries like \texttt{FastParse}, and a parser generator utility \texttt{parboiled2} written in scala.
+There is a Scala standard parser combinator library \texttt{scala.util.parsing}, third-party parsing libraries like \texttt{FastParse}, and a parser generator utility \texttt{parboiled2} written in Scala.
 Thanks to Java interop we can also use parsing libraries for Java.
 When writing custom parsers, aspects of the language like pattern matching and first-class functions are extremely helpful in keeping the code concise and readable.
-While this doesn't make the effort needed to create a parser for inconsequential, it does make Scala an attractive choice for implementing external DSLs.
+While this doesn't make the effort needed to create a parser inconsequential, it does make Scala an attractive choice for implementing external DSLs.
 
 \section{Execution}
 
@@ -34,7 +34,7 @@ Implicit values can also be retrieved using the built-in function \texttt{implic
 A common use is in functions that want to separate arguments that are logically part of the computation from arguments that represent some execution context.
 For example, in a library that implements support for asynchronous computations we would have an \texttt{ExecutorService} that provides access to a configured thread pool.
 Functions from this library would require an \texttt{ExecutorService} as an argument to executo work on other threads.
-Marking the \texttt{ExecutorService} as implicit allows us to omit it from the function calls and unclutter our code, as shown in listings \ref{code:without_implicit} and \ref{code:with_implicit}
+Marking the \texttt{ExecutorService} as implicit allows us to omit it from the function calls and unclutter our code, as shown in Listings \ref{code:without_implicit} and \ref{code:with_implicit}
 
 \begin{lstlisting}[caption=Code without implicits, label=code:without_implicit]
 def async[T](code: => T)(ex: ExecutorService) = ...
@@ -79,11 +79,11 @@ put("k2", "v2")
 val result: String = get("k3")
 \end{lstlisting}
 
-Implicit parameters and implicit conversion help us in implementing the 'clean method calls' pattern, since methods and parameters that aren't part of the domain but are necessary in the implementation of the language can be sometimes completely omitted.
+Implicit parameters and implicit conversion help us in implementing the `clean method calls' pattern, since methods and parameters that aren't part of the domain but are necessary in the implementation of the language can be sometimes completely omitted.
 
 \subsubsection{Implicit classes}
 An implicit class is a shorthand definition of a class with a one-argument constructor alongside an implicit conversion from the argument to that class.
-This simplifies the implementation of the 'Enriched Class' pattern, which imitates adding methods to existing classes.
+This simplifies the implementation of the `Enriched Class' pattern, which imitates adding methods to existing classes.
 Listing \ref{code:implicit_classes} shows a simple extension of the Int class.
 Now the method \texttt{toHexString} is available on any instance of \texttt{Int} as long as the implicit class can be located.
 
@@ -99,8 +99,8 @@ println(i.toHexString)
 With implicit classes we can further remove non-domain symbols from the language by making implicit the creation of domain objects from objects in the host language.
 
 \subsubsection{Context bounds}
-Context bounds are a way to express more information at the type system level.
-The expressions \texttt{def f[T: Ordered](x: T) = \ldots} means that for a given type\texttt{T}, there exists an implementation of the trait \texttt{Ordered}, i.e. there exists a value of type Ordered[T].
+Context bounds are a way to express more information at the level of the type system.
+The expression \texttt{def f[T: Ordered](x: T) = \ldots} means that for a given type \texttt{T}, there exists an implementation of the trait \texttt{Ordered}, i.e. there exists a value of type \texttt{Ordered[T]}.
 This is actually just syntactic sugar which compiles to \texttt{def f[T](x: T)(implicit ev: Ordered[T])}.
 This mechanism is often used to emulate the behavior of Haskell type classes.
 Listing \ref{code:context_bounds} presents the implementation of the Show type class in Scala, which us slightly more verbose than in Haskell.
@@ -131,14 +131,14 @@ However, this is currently deprecated and will be removed in future versions of 
 
 \subsubsection{Implicit lookup}
 
-The implicit lookup algorithm checks the foloowing locaions\footnote{http://docs.scala-lang.org/tutorials/FAQ/finding-implicits.html}: 
+The implicit lookup algorithm checks the following locations\footnote{http://docs.scala-lang.org/tutorials/FAQ/finding-implicits.html}: 
 
 \begin{enumerate}
 	\item First look in current scope
 	\begin{itemize}
 		\item Implicits defined in current scope (\texttt{implicit val x = ...})
     \item Explicit imports (\texttt{import dsl.byte2String})
-    \item wildcard imports (\texttt{import dsl.\_})
+    \item Wildcard imports (\texttt{import dsl.\_})
 	\end{itemize}
 	\item Now look at associated types in
 	\begin{itemize}
@@ -159,7 +159,7 @@ Criticizing implicits is a common thread in online discussions about Scala \auto
 While not actually broken, implicits are a powerful and complex feature that is very prone to abuse.
 
 The Scala collections library is an interesting example of implicit parameter (ab)use.
-Sometimes calles the "Longest suicide note in history" \autocite{lakes:2009}, it makes uses implicit parameters and the \texttt{CanBuildFrom} type class to provide robust operations on collections.
+Sometimes called the "Longest suicide note in history" \autocite{lakes:2009}, it uses implicit parameters and the \texttt{CanBuildFrom} type class to provide robust operations on collections.
 Looking at the \texttt{map} method of \texttt{List[A]} which we expect to have the type signature \texttt{def map[B](f: A => B): List[B]}.
 The actual signature is:
 \begin{verbatim}
@@ -195,7 +195,7 @@ However, there are various alternatives to that notation that Scala allows.
 
 \begin{itemize}
 	\item When invoking methods that don't take arguments, we can omit the empty parentheses (\texttt{list.size} instead of \texttt{list.size()}).
-	\item When invoking a methods that takes one parameter, we can use the infix notation, that is omit the dot and parentheses ((\texttt{list append 1} instead of \texttt{list.append(1)}))
+	\item When invoking methods that take one parameter, we can use the infix notation, i.e. omit the dot and parentheses ((\texttt{list append 1} instead of \texttt{list.append(1)}))
 	\item We can chain infix method invocations.
 \texttt{a m1 a1 m2 a2 m3} compiles as\\ \texttt{a.m1(a1).m2(a2).m3()}
 	\item If we keep parentheses around methods with multiple arguments, we can omit all dots in an expression.
@@ -244,7 +244,7 @@ We can emulate notation used by domain experts and create our own shorthands.
 The problem with using custom operators is that if we introduce new symbols that are unrelated to the domain we run the risk of creating completely unreadable code.
 When we're working in the domain of matrix manipulation, we can be reasonably confident as to what effect symbols like \texttt{+} or \texttt{*} have.
 But in a DSL used to create API endpoints, operators like \texttt{:++>>} or \texttt{<|*|>} are completely opaque, and worst of all, ungoogleable.
-Martin Odersky recently wrote: "But in retrospect I think maybe they did give a bad example for others to go overboard with symbolic operators." \autocite{Odersky:2016}
+Martin Odersky recently wrote: "But in retrospect I think maybe they did give a bad example for others to go overboard with symbolic operators" \autocite{Odersky:2016}.
 
 
 \subsection{Macros}
@@ -270,20 +270,20 @@ This makes macros seem not to be a safe avenue of feature implementation.
 
 Scala supports using anonymous classes in programs.
 An anonymous class is a class that is defined and instantiated inline with code, often because it does not need to be reused.
-Anonymous classes can still use the normal inheritance mechanisms, so we can have on-off classes that are concise and powerful.
+Anonymous classes can still use the normal inheritance mechanisms, so we can have one-off classes that are concise and powerful.
 In the context of DSLs, we can use this capability to implement the Block Scope and Supertype patterns.
-On listing~\ref{code:anonymous} we show how a DSL might use anonymous classes.
+In Listing~\ref{code:anonymous} we show how a DSL might use anonymous classes.
 The \texttt{Connection} and \texttt{Encryption} traits are part of the DSL implementation and encapsulate domain models relating to properties of connections.
 This usage gives us:
 \begin{itemize}
-	\item Type safety - we can restrict usage of unencrypted connections in by making sure that the connection implements the trait \texttt{Encryption}
-	\item Supertype - the \texttt{connect} and \texttt{encrypt} methods can be used only within the scope of the new class body.
+	\item Type safety -- we can restrict usage of unencrypted connections by making sure that the connection implements the trait \texttt{Encryption}
+	\item Supertype -- the \texttt{connect} and \texttt{encrypt} methods can be used only within the scope of the new class body.
 The domain hierarchy is enforced by the language, which removes clutter and prevents mistakes.
-	\item Block scope - connection properties may only be defined within the block used to define the new class instance.
+	\item Block scope -- connection properties may only be defined within the block used to define the new class instance.
 This guarantees that any and all information regarding a connection definition will be found in one place.
 \end{itemize}
 
-Unfortunately, usage of this pattern relies on a feature of Scala that cannot be abstracted from.
+Unfortunately, the usage of this pattern relies on a feature of Scala that cannot be abstracted from.
 The object must be constructed using the \texttt{new} operator and obey all rules of Scala scoping and object creation.
 
 \begin{lstlisting}[caption=Anonymous classes, label=code:anonymous]
@@ -314,7 +314,7 @@ Of course to help us build languages that are robust and extensible we can use a
 The issue with the type system is that with this large and continually growing amount of features it is easier to find strange corner cases that are at best counterintuitive and at worst broken.
 For example, Scala doesn't have full Hindley–Milner type inference.
 Instead, an expression is fully typed in the place that it appears in, and sometimes needs to be guided.
-This can lead to a situation like in listing~\ref{code:inference}, where the variable \texttt{b} was inferred to have type \texttt{X[Nothing]}.
+This can lead to a situation like in Listing~\ref{code:inference}, where the variable \texttt{b} was inferred to have type \texttt{X[Nothing]}.
 This makes it problematic to apply common expression extraction, because we could accidentally remove code that guides the inference.
 
 \begin{lstlisting}[caption=Local inference, label=code:inference, float]
@@ -335,13 +335,13 @@ Listing \ref{code:existentials} is a more convoluted with its use of type bounds
 However, it shows that sometimes the inference needs to be very explicitly guided to compile simple and evidently correct expressions at all.
 It is especially confusing for code at line \ref{line:why}, where we have to annotate a value with a type that it already has.
 
-\subsection{Named parameters \& default arguments}
+\subsection{Named parameters and default arguments}
 
 The named parameters feature in Scala allows us to indicate which value to use as which parameter in a function.
 We can also define default values for arguments, so that we can skip them completely.
-With this we can implement the keyword parameters pattern, as seen in listing \ref{code:named}.
+With this feature we can implement the keyword parameters pattern, as seen in listing \ref{code:named}.
 
-\begin{lstlisting}[caption=Named parameters \& default arguments, label=code:named]
+\begin{lstlisting}[caption=Named parameters and default arguments, label=code:named]
 def printName(
   firstName: String,
   middleName: String = "",
@@ -355,7 +355,7 @@ printName(firstName = "John", lastName = "Doe", middleName = "F")
 \subsection{Objects as modules}
 
 In Scala, every named function must be a method of a class instance.
-Normally, this would mean that every methods call would either be called on a named class instance, or be made inside a class, where we have a default reference \texttt{this}.
+Normally, this would mean that every method call would either be called on a named class instance, or be made inside a class, where we have a default reference \texttt{this}.
 However, Scala provides the ability to import into scope members of a class instance with the same notation used for importing class definitions.
 Listing \ref{code:modules} shows how we can use this to encode an ML-style module system.
 A system like this allows us to bring into scope definitions of values and functions without having to create objects or refer to them by name.
@@ -367,13 +367,13 @@ object module {
 }
 
 import module._ //imports all members of object Module
-f //Calls Module.f()
+f //Calls module.f()
 \end{lstlisting}
 
 \section{Summary}
 
-We have presented several Scala features that we feel are important components in the implementation of internal DSLs.
+We have presented several Scala features that we think are important components in the implementation of internal DSLs.
 They are all accompanied by critical opinions and caveats.
 While no one feature can be pointed to as broken, the accumulated cognitive load when interacting with several features at the same time can prove to be overwhelming.
-This is compounded by the fact that there is no real concept of 'idiomatic Scala' within the community, which leads to fragmentation in coding styles and opinions (from \cite{Hale:2011} "a best practice emerged: ignore the community entirely").
-We leave with two facts useful when designing DSLs: that Scala features should be used very carefully, and that language design is hard.
+This is compounded by the fact that there is no real concept of `idiomatic Scala' within the community, which leads to fragmentation in coding styles and opinions (from \cite{Hale:2011} "a best practice emerged: ignore the community entirely").
+We conclude with two facts useful when designing DSLs: that Scala features should be used very carefully, and that language design is hard.
