@@ -1,13 +1,13 @@
 \chapter{Case studies}
 
-In this chapter we look at two DSLs - one which was written for the purposes of this thesis, and one which is one the most popular DSLs for Scala today.
+In this chapter we look at two DSLs: one which was written for the purposes of this thesis, and one which is one of the most popular DSLs for Scala today.
 We will explore the techniques used to achieve the goals of the language design.
 
-\section{stats-collector}
+\section{Case one: stats-collector}
 
 As part of this thesis I wrote an example project \texttt{stats-collector}.
 It is a Scala implementation of an internal DSL used to compute statistics from arbitrary datasets.
-The implementation actually contains two internal DSLs - one deep and one shallow.
+The implementation actually contains two internal DSLs: one deep and one shallow.
 The deep embedding describes data extraction and aggregation and provides a way to compile this description into code that computes the statistics.
 The shallow embedding provides a shorthand way of constructing these abstract descriptions and attempts to take on a vaguely natural syntax.
 
@@ -16,7 +16,7 @@ We present a slightly simpler and cleaner version, not encumbered with various h
 
 \subsection{The problem}
 
-We formulate the 'stats collection' problem as follows: we have a dataset that is a sequence of rows.
+We formulate the `stats collection' problem as follows: we have a dataset that is a sequence of rows.
 Each row contains a mapping from column name to an arbitrary string value.
 A row might not contain any values.
 We want a way to easily compute statistics over this dataset.
@@ -26,9 +26,9 @@ We also want it to be simple, so that new statistics (e.g. average speed grouped
 
 \subsection{Language design}
 
-First, we want to show an example use of the completed language.
+First, we want to show an example use of the complete language.
 Listing~\ref{code:stats_sample} shows an example configuration that computes four statistics, two grouped by vehicle type and two total.
-The \texttt{speed} statistic take values from the \texttt{vehicle.speed} column, parses them as floats and computes the mean.
+The \texttt{speed} statistic takes values from the \texttt{vehicle.speed} column, parses them as floats and computes the mean.
 The \texttt{speed.events} statistic doesn't parse the column and just lists how many \texttt{vehicle.speed} values were present.
 Listing~\ref{code:stats_use} shows how we can use this configuration on actual data.
 The compiler is used to create an entry processor from the configuration.
@@ -71,7 +71,7 @@ println(processor.outputResult)
 \subsection{The Deep DSL}
 
 \subsubsection{Describing statistics}
-Now that we know how our language should look, we can show how the embedded description language is structured.
+Now that we know how our language should look like, we can show how the embedded description language is structured.
 We can see the basic hierarchy: a single aggregation description needs to describe the source data it is using, the aggregation method it is using, and how to identify it.
 Listing~\ref{code:cad} shows the datatype used.
 Since we need to aggregate separately for each groupBy value (e.g. if we group by vehicle.type we aggregate data separately for cars, trucks, etc.) we need a way to create new aggregator instances for each group.
@@ -103,7 +103,7 @@ for each group
 \subsection{The Shallow DSL}
 
 The shallow DSL for our language consists of two parts: the \texttt{shallow} package object, and the \texttt{StatsConfiguration} trait.
-The former provides the implicit classes and named parser and aggregate implementations, while the latter allows us to group descriptions for a dataset in a single scope, an provides the  \texttt{select} and \texttt{groupBy} methods.
+The former provides the implicit classes and named parser and aggregate implementations, while the latter allows us to group descriptions for a dataset in a single scope, and provides the  \texttt{select} and \texttt{groupBy} methods.
 
 The code in listing~\ref{code:shallow} allows us to write \texttt{"a" as float summarise mean into "b"} by expanding it into 
 \begin{verbatim}
@@ -115,7 +115,7 @@ ColumnAggregateDescription(
 \end{verbatim}
 using the defined implicit classes and names.
 The code in listing~\ref{code:config} allows classes that use the trait StatsConfiguration to use expressions \texttt{select(...).groupBy(...)} in their body.
-The \texttt{select} methods gathers all column aggregate descriptions and stores them in an internal object the we can additionally use \texttt{groupBy} on.
+The \texttt{select} method gathers all column aggregate descriptions and stores them in an internal object the we can additionally use \texttt{groupBy} on.
 When the \texttt{configure} method is called we convert these internal objects into grouped descriptions for the compiler.
 
 \subsection{Extensions}
@@ -153,7 +153,7 @@ class SetSpec extends FlatSpecLike {
 }
 \end{lstlisting}
 
-A simple test specification is defined in listing \ref{code:test}.
+A simple test specification is defined in Listing \ref{code:test}.
 The \texttt{FlatSpecLike} trait mixes in all the objects and definitions needed for using the DSL.
 The implementation is fairly straightforward: an implicit conversion enriches String to contain the \texttt{should} method.
 Through chained functions and more implicit conversions, we add the test case description and body to some internal state.
@@ -175,7 +175,7 @@ trait StringShouldWrapperForVerb {
 
 Listing \ref{code:behavior_implicits} shows an interesting pattern in the trait that allows us to call \texttt{should} on Strings.
 We would like to use the same syntax in different testing styles, but different styles mean different behavior.
-This is solved by making the actual behavior for the \texttt{should} function comes from implicits that are in scope.
+This is solved by making the actual behavior for the \texttt{should} function come from implicits that are in scope.
 
 \begin{lstlisting}[caption=Macros, label=code:macros, float]
 trait Assertions {
@@ -184,7 +184,7 @@ trait Assertions {
 }
 \end{lstlisting}
 
-The assert function in the simple test is actually a scala macro, as seen on listing \ref{code:macros}.
+The assert function in the simple test is actually a scala macro, as seen in Listing \ref{code:macros}.
 The purpose of these macros in ScalaTest is to have helpful messages from pure Scala expressions, since a pure Scala assertion could only say that an assertion was false.
 The macro attempts to detect simple expressions \texttt{(a == b)} or \texttt{(a.isEmpty)}, and generates the descriptive messages: \texttt{2 was not 1} or \texttt{List(1, 2) was not empty}.
 We can also avoid using assertions and explicitly define our expectations by writing code like \texttt{result should have length 3}.
