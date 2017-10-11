@@ -61,7 +61,7 @@ However, languages with complex (or poorly designed) grammars will still result 
 
 The source code of programs written in external DSLs is completely separate from the implementation.
 To the end user, this means that they don't need to have access to the implementation source code and build pipeline to write programs in the DSL.
-This allows use to, for example, embed a DSL in a commercial application.
+This allows us, for example, to embed a DSL in a commercial application.
 Customers can then extend the functionality of the program without having access to confidential implementation data.
 
 \subsubsection{Developer tools}
@@ -101,7 +101,7 @@ This gives us all the benefits that we would have when writing a program in the 
     stack.pop() should be (2)
     stack.pop() should be (1)
   }
-  it should "throw NoSuchElementException if an empty stack is popped" in {
+  it should "throw an Exception if an empty stack is popped" in {
     val emptyStack = new Stack[Int]
     a [NoSuchElementException] should be thrownBy {
       emptyStack.pop()
@@ -109,8 +109,8 @@ This gives us all the benefits that we would have when writing a program in the 
   }
 \end{lstlisting}
 
-In Listing \ref{code:scalatest_sample} we have a ScalaTest\footnote{\url{http://www.scalatest.org/}} test scenario.
-We can see that normal Scala code is interspersed with ScalaTest code.
+Listing \ref{code:scalatest_sample} shows a test scenario written in scala that uses the ScalaTest\footnote{\url{http://www.scalatest.org/}} framework.
+ScalaTest uses verbs like `should` as expression names to allow assertions and test descriptions to read like sentences in natural language.
 The lines
 \begin{verbatim}
 "A Stack" should "pop values in last-in-first-out order" in {
