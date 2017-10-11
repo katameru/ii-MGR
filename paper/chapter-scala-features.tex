@@ -58,7 +58,7 @@ scheduleOnce(doThisAgain(), 1.hour)
 
 \subsubsection{Implicit conversions}
 Unary functions can be marked as {\it implicit} to become implicit conversions.
-This allows us to use expressions of type \texttt{A} as if they had type \texttt{B}, as long as we have an implicit conversion of type \texttt{A => B} can be found by the implicit lookup mechanism.
+This allows us to use expressions of type \texttt{A} as if they had type \texttt{B}, as long as there exists an implicit conversion of type \texttt{A => B} that can be found by the implicit lookup mechanism.
 This includes method calls, so we can call methods of type \texttt{B} on values of type \texttt{A}.
 Implicit conversions can be useful when we are using a library that requires a datatype that is different from what is used internally.
 Listing \ref{code:conversions} shows an interface that uses byte arrays, but we use implicit conversions to transparently use String within our program.
@@ -167,8 +167,8 @@ def map[B, That](f: A => B)
   (implicit bf: CanBuildFrom[Repr, B, That]): That
 \end{verbatim}
 Listing~\ref{code:bitset} (taken from a response to \autocite{lakes:2009}) shows that the implicit parameter in \texttt{map} is used to find the best possible return type for that method.
-While this is a powerful result, it presents less like functionality and more like a leaky abstraction.
-This is underlined by the fact that in newer versions of Scala the documentation doesn't show the real type, but the one that we expected in the beginning.
+While this is a powerful result, the function signature can be confusing and signals that this is a leaky abstraction.
+Scala maintainers agree with this, and in newer versions of Scala the documentation doesn't show the real type, but the one that we expected in the beginning.
 
 \begin{lstlisting}[caption=Bitset example, label=code:bitset]
 scala> val bits = BitSet(1, 2, 3)
