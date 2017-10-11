@@ -328,12 +328,12 @@ val b = new X()
 val bm = b.m(1) //Won't compile
 
 val c = new X[Int]
-val cm = c(1)
+val cm = c.m(1)
 \end{lstlisting}
 
-Listing \ref{code:existentials} is a more convoluted with its use of type bounds and existential types.
-However, it shows that sometimes the inference needs to be very explicitly guided to compile simple and evidently correct expressions at all.
-It is especially confusing for code at line \ref{line:why}, where we have to annotate a value with a type that it already has.
+Using the more advanced features of the type system like existential types or type bounds can lead to situations where it is not obvious why our program does not work.
+We can construct a program where the type checker has to be so explicitly guided that we have to annotate an expression with a type that it already has.
+Listing \ref{code:existentials} shows some of these constructions.
 
 \subsection{Named parameters and default arguments}
 
