@@ -366,7 +366,7 @@ object module {
   def g() = ...
 }
 
-import module._ //imports all members of object Module
+import module._ //imports all members of object module
 f //Calls module.f()
 \end{lstlisting}
 
@@ -375,5 +375,5 @@ f //Calls module.f()
 We have presented several Scala features that we think are important components in the implementation of internal DSLs.
 They are all accompanied by critical opinions and caveats.
 While no one feature can be pointed to as broken, the accumulated cognitive load when interacting with several features at the same time can prove to be overwhelming.
-This is compounded by the fact that there is no real concept of `idiomatic Scala' within the community, which leads to fragmentation in coding styles and opinions (from \cite{Hale:2011} "a best practice emerged: ignore the community entirely").
+This is compounded by the fact that there is no real concept of \enquote{idiomatic Scala} within the community, which leads to fragmentation in coding styles and opinions (from \cite{Hale:2011} "a best practice emerged: ignore the community entirely").
 We conclude with two facts useful when designing DSLs: that Scala features should be used very carefully, and that language design is hard.
