@@ -5,11 +5,10 @@ We will explore the techniques used to achieve the goals of the language design.
 
 \section{Case one: stats-collector}
 
-As part of this thesis I wrote an example project \texttt{stats-collector}.
 It is a Scala implementation of an internal DSL used to compute statistics from arbitrary datasets.
 The implementation actually contains two internal DSLs: one deep and one shallow.
 The deep embedding describes data extraction and aggregation and provides a way to compile this description into code that computes the statistics.
-The shallow embedding provides a shorthand way of constructing these abstract descriptions and attempts to take on a vaguely natural syntax.
+The shallow embedding provides a shorthand way of constructing these abstract descriptions and attempts to take on a natural syntax.
 
 This code is heavily based on code used in production at \texttt{Neurosoft~Sp.~z~o.o.}.
 We present a slightly simpler and cleaner version, not encumbered with various historical necessities.
