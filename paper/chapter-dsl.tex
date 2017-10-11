@@ -132,18 +132,18 @@ We then receive a descriptive report about which tests failed and which succeede
 A deep embedding separates the representation of the DSL from its execution.
 We use the host language to create the structure of a program, which will be later compiled or interpreted by another part of the DSL.
 
+Seen in Listing \ref{code:spark_sample} is an abbreviated Apache Spark\textsuperscript{TM}\footnote{\url{http://spark.apache.org/}} program.
+The variable \texttt{rdd} holds metadata that describes how some piece of data is read, filtered, and transformed.
+This will be compiled to an execution plan, optimized, and run on multiple computers by the Spark runtime system, completely transparently to the user.
+
 \begin{lstlisting}[caption=Sample spark code, label=code:spark_sample]
 val rdd = sparkContext.
 	fromFile("data.csv").
-	filter(...).
-	map(...)
+	filter(isValidTransaction).
+	map(extractTransactionAmount)
 
 println(rdd.sum)
 \end{lstlisting}
-
-Seen in Listing \ref{code:spark_sample} is an abbreviated Apache Spark\textsuperscript{TM}\footnote{\url{http://spark.apache.org/}} program.
-The variable \texttt{rdd} holds metadata that describe the loading and transforming of some data.
-This will be compiled to an execution plan, optimized, and run on multiple computers, completely transparently to the user.
 
 While this form of DSL doesn't make any allowances for handy syntax, it can be much more expressive and powerful than a shallow embedding.
 A shallow embedding needs to map cleanly into the host language.
