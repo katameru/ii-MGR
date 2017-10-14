@@ -73,15 +73,61 @@ println(processor.outputResult)
 \subsubsection{Describing statistics}
 Now that we know how our language should look like, we can show how the embedded description language is structured.
 We can see the basic hierarchy: a single aggregation description needs to describe the source data it is using, the aggregation method it is using, and how to identify it.
+\begin{lstlisting}[caption=ColumnAggregateDescription, label=code:cad]
+case class ColumnAggregateDescription[ColumnType](
+    sourceColumnDescription: SourceColumnDescription[ColumnType],
+    aggregateBuilder: AggregateBuilder[ColumnType],
+    outputName: String) {
+  def fresh: ColumnAggregate[ColumnType] = new ColumnAggregate(sourceColumnDescription, aggregateBuilder.fresh, outputName)
+}
+
+class ColumnAggregate[-ColumnType](
+    sourceColumnDescription: SourceColumnDescription[ColumnType],
+    aggregate: Aggregate[ColumnType],
+    outputName: String) {
+  def add(entry: Entry) = sourceColumnDescription.parseEntry(entry).foreach { aggregate.add(_) }
+  def output: Seq[(String, String)] = aggregate.getOutput
+}
+\end{lstlisting}
 Listing~\ref{code:cad} shows the datatype used.
 Since we need to aggregate separately for each groupBy value (e.g. if we group by vehicle.type we aggregate data separately for cars, trucks, etc.) we need a way to create new aggregator instances for each group.
 
+\begin{lstlisting}[caption=SourceColumnDescription, label=code:scd]
+case class SourceColumnDescription[+Column](columnName: String, columnParser: ColumnParser[Column]) {
+  def parseEntry(entry: Entry): Option[Column] = {
+    entry.get(columnName) flatMap columnParser.parse orElse columnParser.default
+  }
+}
+
+trait ColumnParser[+A] {
+  def name: String
+  def parse(column: String): Option[A]
+  def default: Option[A] = None
+}
+\end{lstlisting}
 Listing~\ref{code:scd} shows how we describe column parsing.
 To support a new data type in our DSL we just need to provide a simple implementation of the trait ColumnParser.
 
+\begin{lstlisting}[caption=Aggregate, label=code:agg, float, floatlocation=H]
+trait AggregateBuilder[-Elem] {
+  type Aggr <: Aggregate[Elem]
+  def fresh: Aggr
+}
+
+trait Aggregate[-Elem] {
+  def add(e: Elem): this.type
+  def getOutput: Seq[(String, String)]
+}
+\end{lstlisting}
 Listing~\ref{code:agg} shows the interfaces that need to be implemented for aggregates.
 We force them to hold mutable state, and we define aggregate output to be simply a sequence of pairs (statistic name, statistic value) already converted to strings.
 These traits are very simple so that we can easily add more aggregate types to our DSL as needed.
+
+\begin{lstlisting}[caption=GroupedDescription, label=code:grouped]
+case class GroupedDescription(
+	grouping: Seq[SourceColumnDescription[_]],
+	descriptionsUnderGrouping: SeqColumnAggregateDescription[_]])
+\end{lstlisting}
 
 We now have a full image of how a single column aggregation is described.
 To describe grouped aggregations we need to collect the aggregations we want to group and the columns by which we group.
@@ -92,7 +138,7 @@ We make compiling the statistics simple by not implementing any optimizations.
 The \texttt{EntryProcessor} has mutable internal state that maps a pair (parsed grouping values, output name) into a computed aggregate.
 Listing~\ref{code:processing} presents the logic of processing entries.
 
-\begin{lstlisting}[caption=Processing entries, label=code:processing,float,floatplacement=H]
+\begin{lstlisting}[caption=Processing entries, label=code:processing]
 for each group
   try to parse the grouping columns
   for each aggregate description
@@ -101,6 +147,40 @@ for each group
 \end{lstlisting}
 
 \subsection{The Shallow DSL}
+
+\begin{lstlisting}[caption=shallow package object, label=code:shallow, float]
+package object shallow {
+  //Parsers
+  def int = IntParser
+  def float = FloatParser
+  def string = StringParser
+  def nothing = EmptyParser
+
+  //Parser default
+  implicit class DefaultParser[A](parser: ColumnParser[A]) {
+    def or(defaultValue: A): ColumnParser[A] = { new WithDefault(parser, defaultValue) }
+  }
+
+  //Aggregators
+  def count[A] = new CounterBuilder[A]
+  def count[A](p: A => Boolean) = new PredicateCounterBuilder[A](p)
+  def mean = new MeanBuilder
+
+  //Describe source column
+  implicit class ColumnNameWrapper(columnName: String) {
+    def as[A](columnParser: ColumnParser[A]): SourceColumnDescription[A] = SourceColumnDescription(columnName, columnParser)
+  }
+
+  //Describe aggregation
+  implicit class SourceDescriptionWrapper[A](description: SourceColumnDescription[A]) {
+    class IncompleteDescription(aggregateBuilder: AggregateBuilder[A]) {
+      def into(outputName: String) = ColumnAggregateDescription(description, aggregateBuilder, outputName)
+    }
+
+    def summarise(aggregateBuilder: AggregateBuilder[A]) = new IncompleteDescription(aggregateBuilder)
+  }
+}
+\end{lstlisting}
 
 The shallow DSL for our language consists of two parts: the \texttt{shallow} package object, and the \texttt{StatsConfiguration} trait.
 The former provides the implicit classes and named parser and aggregate implementations, while the latter allows us to group descriptions for a dataset in a single scope, and provides the  \texttt{select} and \texttt{groupBy} methods.
@@ -117,6 +197,29 @@ using the defined implicit classes and names.
 The code in listing~\ref{code:config} allows classes that use the trait StatsConfiguration to use expressions \texttt{select(...).groupBy(...)} in their body.
 The \texttt{select} method gathers all column aggregate descriptions and stores them in an internal object the we can additionally use \texttt{groupBy} on.
 When the \texttt{configure} method is called we convert these internal objects into grouped descriptions for the compiler.
+
+\begin{lstlisting}[caption=StatsConfiguration, label=code:config]
+trait StatsConfiguration {
+  class StubbedGroupedDescriptions(descriptions: Seq[ColumnAggregateDescription[_]]) {
+    private val groupingBuffer: ArrayBuffer[SourceColumnDescription[String]] = ArrayBuffer()
+    private[StatsConfiguration] def finishStub() = GroupedDescription(groupingBuffer.toSeq, descriptions)
+
+    def groupBy(groupings: SourceColumnDescription[String]*): this.type = {
+      groupingBuffer ++= groupings
+      this
+    }
+  }
+
+  private val groupedDescriptions: ArrayBuffer[StubbedGroupedDescriptions] = ArrayBuffer()
+  protected def select(descriptions: ColumnAggregateDescription[_]*): StubbedGroupedDescriptions = {
+    val stubbedDescription = new StubbedGroupedDescriptions(descriptions)
+    groupedDescriptions += stubbedDescription
+    stubbedDescription
+  }
+
+  def configure: Seq[GroupedDescription] = groupedDescriptions.map(_.finishStub())
+}
+\end{lstlisting}
 
 \subsection{Extensions}
 
@@ -143,7 +246,7 @@ This freed the creators of ScalaTest from concerns about separating the DSL synt
 
 In this section we will explore how ScalaTest allows users to structure tests, and how it uses Scala features to achieve clean syntax.
 
-\begin{lstlisting}[caption=Simple test, label=code:test]
+\begin{lstlisting}[caption=Simple test, label=code:test, float, floatplacement=H]
 class SetSpec extends FlatSpecLike {
 
   "An empty Set" should "have size 0" in {
@@ -159,7 +262,7 @@ The implementation is fairly straightforward: an implicit conversion enriches St
 Through chained functions and more implicit conversions, we add the test case description and body to some internal state.
 When the test suite is executed, the test body will run, and a report will be generated.
 
-\begin{lstlisting}[caption=Behavior from implicits, label=code:behavior_implicits, float]
+\begin{lstlisting}[caption=Behavior from implicits, label=code:behavior_implicits, float, floatplacement=H]
 trait StringShouldWrapperForVerb {
   def should
     (right: String)
@@ -177,7 +280,7 @@ Listing \ref{code:behavior_implicits} shows an interesting pattern in the trait 
 We would like to use the same syntax in different testing styles, but different styles mean different behavior.
 This is solved by making the actual behavior for the \texttt{should} function come from implicits that are in scope.
 
-\begin{lstlisting}[caption=Macros, label=code:macros, float]
+\begin{lstlisting}[caption=Macros, label=code:macros, float, floatplacement=H]
 trait Assertions {
   def assert(condition: Boolean): Assertion =
     macro AssertionsMacro.assert
