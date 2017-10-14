@@ -133,6 +133,7 @@ A deep embedding separates the representation of the DSL from its execution.
 We use the host language to create the structure of a program, which will be later compiled or interpreted by another part of the DSL.
 
 Seen in Listing \ref{code:spark_sample} is an abbreviated Apache Spark\textsuperscript{TM}\footnote{\url{http://spark.apache.org/}} program.
+Spark is a cluster-computing framework that allows users to define a data-processing pipeline using a simple API and transparently handles data paralellism, optimisations, and fault-tolerance.
 The variable \texttt{rdd} holds metadata that describes how some piece of data is read, filtered, and transformed.
 This will be compiled to an execution plan, optimized, and run on multiple computers by the Spark runtime system, completely transparently to the user.
 
