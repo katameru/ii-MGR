@@ -33,7 +33,7 @@ Wildcard imports do not recurse, so if there was a package `pl.wroc.uni.ii.mjanu
 
 \subsection{Package objects}
 
-\begin{lstlisting}[caption=Package object, label=code:package\_object, escapechar=|, float, floatplacement=H]
+\begin{lstlisting}[caption=Package object, label=code:package-object, escapechar=|, float, floatplacement=H]
 package pl.wroc.uni.ii
 package object mjanuszkiewicz {
   def bytesToString(bytes: Array[Byte]): String = ...
@@ -41,7 +41,7 @@ package object mjanuszkiewicz {
 \end{lstlisting}
 
 Package objects are a way to place methods and values into packages, in addition to classes and traits.
-In listing `code:package\_object` we define a utility function `bytesToString`.
+In listing `code:package-object` we define a utility function `bytesToString`.
 It can now be imported with the statement `import pl.wroc.uni.ii.mjanuszkiewicz.bytesToString`.
 It will also be in scope in every file in the package `pl.wroc.uni.ii.mjanuszkiewicz`.
 
