@@ -108,7 +108,7 @@ trait ColumnParser[+A] {
 Listing~\ref{code:scd} shows how we describe column parsing.
 To support a new data type in our DSL we just need to provide a simple implementation of the trait ColumnParser.
 
-\begin{lstlisting}[caption=Aggregate, label=code:agg, float, floatlocation=H]
+\begin{lstlisting}[caption=Aggregate, label=code:agg, float, floatplacement=H]
 trait AggregateBuilder[-Elem] {
   type Aggr <: Aggregate[Elem]
   def fresh: Aggr
