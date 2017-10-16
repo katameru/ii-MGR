@@ -54,19 +54,19 @@ Scala uses a different notation: \texttt{Class[A]} instead of \texttt{Class<A>} 
 \section{Methods and functions}
 
 \begin{lstlisting}[caption=Methods and functions, label=code:methods, escapechar=|, float, floatplacement=H]
-def double(x: Int) = 2 * x
-def id[T](x: T): T = x
-def add(x: Int)(y: Int): Int = {
+def double(x: Int) = 2 * x //Method
+def id[T](x: T): T = x //Generic method
+def add(x: Int)(y: Int): Int = { //Method with two argument lists
   x + y
 }
-val neg = (x: Int) => -x
-val add2 = add(2) _
+val neg = (x: Int) => -x //Create anonymous function
+val add2: Int => Int = add(2) //Create function from method
 \end{lstlisting}
 
 Listing~\ref{code:methods} shows various method and function declarations.
-Method return types, return statements, are optional, as are braces when the method body is a single expression.
+Method return types and return statements are optional, as are braces when the method body is a single expression.
 As in Java, Scala methods can be generic.
-Interestingly, methods in Scala can have multiple argument lists, which mimicks parital application.
+Interestingly, methods in Scala can have multiple argument lists, which we can use to easily create partially applied functions.
 
 \section{Call-by-name}
 
