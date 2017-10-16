@@ -137,13 +137,12 @@ Spark is a cluster-computing framework that allows users to define a data-proces
 The variable \texttt{rdd} holds metadata that describes how some piece of data is read, filtered, and transformed.
 This will be compiled to an execution plan, optimized, and run on multiple computers by the Spark runtime system, completely transparently to the user.
 
-\begin{lstlisting}[caption=Sample spark code, label=code:spark_sample]
-val rdd = sparkContext.
-	fromFile("data.csv").
-	filter(isValidTransaction).
-	map(extractTransactionAmount)
-
-println(rdd.sum)
+\begin{lstlisting}[caption=Sample Spark code in Python, label=code:spark_sample]
+text_file = spark.textFile("hdfs://...")
+ 
+rdd = text_file.flatMap(lambda line: line.split())
+    .map(lambda word: (word, 1))
+    .reduceByKey(lambda a, b: a+b)
 \end{lstlisting}
 
 While this form of DSL doesn't make any allowances for handy syntax, it can be much more expressive and powerful than a shallow embedding.
