@@ -17,7 +17,7 @@ class Compiler {}
 Packages are a way to organise Scala classes, traits, and values into logical groups.
 A package declaration is placed at the beginning of every Scala source file, and all classes and traits declared in that file are placed into that package.
 Additionally, all other classes in that package are in scope without the need to import them.
-The Compiler class declared in Listing `code:package` will be visible as `pl.wroc.uni.ii.mjanuszkiewicz.Compiler`
+The Compiler class declared in Listing~\ref{code:package} will be visible as \texttt{pl.wroc.uni.ii.mjanuszkiewicz.Compiler}
 
 \subsection{Imports}
 
@@ -28,8 +28,8 @@ import pl.wroc.uni.ii.mjanuszkiewicz.deep._
 
 Imports bring entities from other packages into scope.
 We can import either a specific thing by providing its full name, or everything in a given package by using a wildcard import.
-On listing `code:imports` we import the class `SampleStatsConfiguration`, and also everything in the package `pl.wroc.uni.ii.mjanuszkiewicz.deep`.
-Wildcard imports do not recurse, so if there was a package `pl.wroc.uni.ii.mjanuszkiewicz.deep.compilation`, it would not be imported.
+In Listing~\ref{code:imports} we import the class \texttt{SampleStatsConfiguration}, and also everything in the package \texttt{pl.wroc.uni.ii.mjanuszkiewicz.deep}.
+Wildcard imports do not recurse, so if there was a package e.g. \texttt{pl.wroc.uni.ii.mjanuszkiewicz.deep.compilation}, it would not be imported.
 
 \subsection{Package objects}
 
@@ -41,9 +41,9 @@ package object mjanuszkiewicz {
 \end{lstlisting}
 
 Package objects are a way to place methods and values into packages, in addition to classes and traits.
-In listing `code:package-object` we define a utility function `bytesToString`.
-It can now be imported with the statement `import pl.wroc.uni.ii.mjanuszkiewicz.bytesToString`.
-It will also be in scope in every file in the package `pl.wroc.uni.ii.mjanuszkiewicz`.
+In Listing~\ref{code:package-object} we define a utility function \texttt{bytesToString}.
+It can now be imported with the statement \texttt{import pl.wroc.uni.ii.mjanuszkiewicz.bytesToString}.
+It will also be in scope in every file in the package \texttt{pl.wroc.uni.ii.mjanuszkiewicz}.
 
 \section{Classes, traits, and generics}
 
@@ -51,7 +51,7 @@ Scala classes are exactly the same as Java classes.
 Scala traits have a similar role to Java interfaces, in that they define methods that must be implemented and can provide some default implementations.
 However, in Scala traits were designed to enable modular behavior composition, so the rules governing mixing-in traits and method dispatch are more robust.
 Scala classes and traits can be generic in the same way Java classes are.
-Scala uses a different notation: `Class[A]` instead of `Class[A]` in Java.
+Scala uses a different notation: \texttt{Class[A]} instead of \texttt{Class<A>} in Java.
 
 \section{Functions, methods, anonymous functions, multiple argument lists, and generics}
 
@@ -66,7 +66,7 @@ val add2 = add(2) _
 
 \end{lstlisting}
 
-Listing `code:methods` shows various method and function declarations.
+Listing~\ref{code:methods} shows various method and function declarations.
 Method return types, return statements, are optional, as are braces when the method body is a single expression.
 As in Java, Scala methods can be generic.
 Interestingly, methods in Scala can have multiple argument lists, which mimicks parital application.
