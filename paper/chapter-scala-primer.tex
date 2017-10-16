@@ -63,7 +63,6 @@ def add(x: Int)(y: Int): Int = {
 }
 val neg = (x: Int) => -x
 val add2 = add(2) _
-
 \end{lstlisting}
 
 Listing~\ref{code:methods} shows various method and function declarations.
@@ -71,7 +70,21 @@ Method return types, return statements, are optional, as are braces when the met
 As in Java, Scala methods can be generic.
 Interestingly, methods in Scala can have multiple argument lists, which mimicks parital application.
 
-
 \section{Call-by-name}
+
+\begin{lstlisting}[caption=Call-by-name, label=code:cbn, escapechar=|, float, floatplacement=H]
+def time[A](action: => A): A = {
+  val start = System.nanoTime()
+  val result = action
+  val stop = System.nanoTime()
+  println("Action took " + (stop-start).toString + "nanosecond to execute")
+  result
+}
+\end{lstlisting}
+
+Scala allows method arguments to be passed by name.
+This means that the argument value is not evaluated at the method call-site, but whenever the argument is actually used in the method body.
+Listing~\ref{code:cbn} shows an implementation of a function that can measure the execution time of any block of code.
+If we wanted to measure the time it took to execute the code \texttt{val res = maybeExpensive()}, we only have to write \texttt{val res = time(maybeExpensive())}.
 
 \section{Method calls}
