@@ -2,8 +2,6 @@
 
 This sections serves as a way to familiarize the reader with the Scala syntax.
 
-%\begin{lstlisting}[caption=Existential inference, label=code:existentials, escapechar=|, float, floatplacement=H]
-
 \section{Imports, packages, and package objects}
 
 \subsection{Packages}
@@ -53,7 +51,7 @@ However, in Scala traits were designed to enable modular behavior composition, s
 Scala classes and traits can be generic in the same way Java classes are.
 Scala uses a different notation: \texttt{Class[A]} instead of \texttt{Class<A>} in Java.
 
-\section{Functions, methods, anonymous functions, multiple argument lists, and generics}
+\section{Methods and functions}
 
 \begin{lstlisting}[caption=Methods and functions, label=code:methods, escapechar=|, float, floatplacement=H]
 def double(x: Int) = 2 * x
@@ -86,5 +84,3 @@ Scala allows method arguments to be passed by name.
 This means that the argument value is not evaluated at the method call-site, but whenever the argument is actually used in the method body.
 Listing~\ref{code:cbn} shows an implementation of a function that can measure the execution time of any block of code.
 If we wanted to measure the time it took to execute the code \texttt{val res = maybeExpensive()}, we only have to write \texttt{val res = time(maybeExpensive())}.
-
-\section{Method calls}
