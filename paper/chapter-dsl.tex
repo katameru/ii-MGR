@@ -218,4 +218,9 @@ This allows developers to extend the capabilities of the scripts in a manner tra
 Using Groovy's metaprogramming facilities we can add new methods to existing classes or class instances.
 This capability extends even to numbers, which would allow us to make the following expresion valid: \lstinlint|deadline = Date.now + 1.month|.
 
+\subsubsection{Compilation customizers}
+
+The Groovy compiler provides hooks for custom code to run during various compilations phases.
+Out of the box groovy provides several customizers that cover many of the common use cases, such as transparently adding imports, AST transformation, or syntax restriction.
+
 In the next chapter we will explore how Scala enables the use of these patterns and discuss some of the pitfalls that these features bring.
