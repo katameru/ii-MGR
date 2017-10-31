@@ -200,4 +200,10 @@ Groovy allows programmers to omit parentheses around the arguments of a method c
 We can apply this rule in chained method invocations so the expression \texttt{a m1 a1 m2 a2} is equivalent to \texttt{a.m1(a1).m2(a2)}.
 This also works with multiple arguments, closure arguments, and even named arguments.
 
+\subsubsection{Operator overloading}
+
+Almost all operators on Groovy can be overloaded.
+This is accomplished by rewriting operator uses into method calls, so, for example \texttt{a + b} is transformed into \texttt{a.plus(b)}.
+This applies not only to simple infox or postfix operators, but also expressions that mimick array access or assignement, where \texttt{a[b] = c} becomes \texttt{a.putAt(b, c)}.
+
 In the next chapter we will explore how Scala enables the use of these patterns and discuss some of the pitfalls that these features bring.
