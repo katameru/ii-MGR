@@ -54,7 +54,7 @@ Custom syntax usually means a significant rise in implementation complexity and 
 \subsubsection{Parsing custom syntax}
 
 The first issue we face in implementing external DSLs is that we need to parse the source files into an internal representation.
-Scala has several options for parsing libraries and parser generators which simplify this step significantly.
+Most languages have multiple options for parsing libraries and parser generators which simplify this step significantly.
 However, languages with complex (or poorly designed) grammars will still result in complex parsers, and any input that isn't text-based (e.\,g. image, binary file) will need to be parsed using custom-written code.
 
 \subsubsection{End-user independence}
@@ -216,7 +216,7 @@ This allows developers to extend the capabilities of the scripts in a manner tra
 \subsubsection{Extension methods}
 
 Using Groovy's metaprogramming facilities we can add new methods to existing classes or class instances.
-This capability extends even to numbers, which would allow us to make the following expresion valid: \lstinlint|deadline = Date.now + 1.month|.
+This capability extends even to numbers, which would allow us to make the following expresion valid: \lstinline|deadline = Date.now + 1.month|.
 
 \subsubsection{Compilation customizers}
 
