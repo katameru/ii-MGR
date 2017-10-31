@@ -194,5 +194,10 @@ It was created with the aim of improving developer productivity by introducing p
 Additionally, Groovy syntax is similar to Java to the point that most Java code is also valid Groovy.
 Some of the new language features of Groovy relate to DSL creation:
 
+\subsubsection{Method invocation}
+
+Groovy allows programmers to omit parentheses around the arguments of a method call for top-level statements and dots between the object and the method name.
+We can apply this rule in chained method invocations so the expression \texttt{a m1 a1 m2 a2} is equivalent to \texttt{a.m1(a1).m2(a2)}.
+This also works with multiple arguments, closure arguments, and even named arguments.
 
 In the next chapter we will explore how Scala enables the use of these patterns and discuss some of the pitfalls that these features bring.
